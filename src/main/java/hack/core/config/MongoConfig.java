@@ -1,4 +1,4 @@
-package hack.core.dao;
+package hack.core.config;
 
 import org.jongo.Jongo;
 import org.springframework.context.annotation.Bean;

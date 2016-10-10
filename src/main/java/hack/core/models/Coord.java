@@ -6,6 +6,8 @@ public class Coord {
 
 	private String type;
 	private int[] coordinates;
+	private int x;
+	private int y;
 
 	public Coord() {
 		super();
@@ -38,19 +40,21 @@ public class Coord {
 	}
 
 	public int getX() {
-		return coordinates[0];
+		return this.x;
 	}
 
 	public void setX(int x) {
 		this.coordinates[0] = x;
+		this.x = x;
 	}
 
 	public int getY() {
-		return coordinates[1];
+		return this.y;
 	}
 
 	public void setY(int y) {
 		this.coordinates[1] = y;
+		this.y = y;
 	}
 
 	@Override

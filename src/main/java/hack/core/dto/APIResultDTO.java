@@ -3,13 +3,13 @@ package hack.core.dto;
 public class APIResultDTO {
 
 	private APIResultType result;
-	private String message;
+	private Object message;
 
 	public APIResultDTO() {
 		super();
 	}
 
-	public APIResultDTO(APIResultType result, String message) {
+	public APIResultDTO(APIResultType result, Object message) {
 		super();
 		this.result = result;
 		this.message = message;
@@ -23,11 +23,11 @@ public class APIResultDTO {
 		this.result = result;
 	}
 
-	public String getMessage() {
+	public Object getMessage() {
 		return message;
 	}
 
-	public void setMessage(String message) {
+	public void setMessage(Object message) {
 		this.message = message;
 	}
 

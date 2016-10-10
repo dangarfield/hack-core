@@ -1,4 +1,4 @@
-package hack.core.dao;
+package hack.core.config;
 
 import java.util.logging.Logger;
 
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MongoCollections {
-
+	
 	private static final Logger LOG = Logger.getLogger("MongoCollections");
 
 	@Autowired
@@ -27,10 +27,11 @@ public class MongoCollections {
 		LOG.info("Bean created: locations");
 		return jongo.getCollection("locations");
 	}
-	
+
 	@Bean
 	public MongoCollection config() {
 		LOG.info("Bean created: config");
 		return jongo.getCollection("config");
 	}
+
 }

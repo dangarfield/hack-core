@@ -44,8 +44,14 @@
 					<#list locations as location>
 						<li><strong>Location:</strong> ${location.ip} - [${location.coord.x},${location.coord.y}]</li>
 						<ul>
-						<#list location.troopsOwn as troop>
-							<li><strong>Troops:</strong> ${troop.type} - ${troop.noOfTroops}</li>
+						<#list location.defense as troop>
+							<li><strong>Defense:</strong> ${troop.type} - ${troop.noOfTroops}</li>
+						</#list>
+						<#list location.attackOut as troop>
+							<li><strong>Attack Out:</strong> ${troop.type} - ${troop.noOfTroops}</li>
+						</#list>
+						<#list location.attackIn as troop>
+							<li><strong>Attack In:</strong> ${troop.type} - ${troop.noOfTroops}</li>
 						</#list>
 						</ul>
 					</#list>

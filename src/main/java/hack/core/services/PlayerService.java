@@ -1,6 +1,7 @@
 package hack.core.services;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -93,7 +94,7 @@ public class PlayerService {
 	private Set<Research> createDefaultResearch() {
 		Set<Research> researches = new HashSet<Research>();
 		for (ResearchType type : ResearchType.values()) {
-			researches.add(new Research(type, 1));
+			researches.add(new Research(type, new Random().nextInt(5 - 1) + 1));
 		}
 		return researches;
 	}
@@ -116,5 +117,9 @@ public class PlayerService {
 	
 	public void save(Player player) {
 		playerDAO.save(player);
+	}
+
+	public Player getPlayerById(ObjectId playerId) {
+		return playerDAO.getUserById(playerId);
 	}
 }

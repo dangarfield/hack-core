@@ -1,5 +1,6 @@
 package hack.core.actor.config;
 
+import hack.core.actor.AttackActor;
 import hack.core.actor.ResearchTrainingActor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,9 @@ import akka.actor.ActorSystem;
 @Configuration
 public class ActorConfig {
 
-	public static final String RESEARCH_TRAINING_ACTOR = "research-training-actor";
 	public static final String ACTOR_SYSTEM = "hack-actor-actorSystem";
+	public static final String RESEARCH_TRAINING_ACTOR = "research-training-actor";
+	public static final String ATTACK_ACTOR = "attack-actor";
 
 	private ActorSystem actorSystem;
 
@@ -33,5 +35,11 @@ public class ActorConfig {
 	public ActorRef businessActor() {
 		return actorSystem.actorOf(//
 				new DependencyInjectionProps(applicationContext, ResearchTrainingActor.class), RESEARCH_TRAINING_ACTOR);
+	}
+	@Bean(name = ATTACK_ACTOR)
+	@DependsOn({ ACTOR_SYSTEM })
+	public ActorRef attackActor() {
+		return actorSystem.actorOf(//
+				new DependencyInjectionProps(applicationContext, AttackActor.class), ATTACK_ACTOR);
 	}
 }

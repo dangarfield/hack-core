@@ -2,6 +2,7 @@ package hack.core.dao;
 
 import hack.core.models.Player;
 
+import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,5 +31,9 @@ public class PlayerDAO {
 
 	public Player getPlayerByLocationIP(String ip) {
 		return players.findOne("{locationIps:#}",ip).as(Player.class);
+	}
+
+	public Player getUserById(ObjectId playerId) {
+		return players.findOne("{_id:#}",playerId).as(Player.class);
 	}
 }

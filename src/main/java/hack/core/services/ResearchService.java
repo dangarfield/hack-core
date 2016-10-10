@@ -35,7 +35,6 @@ public class ResearchService {
 	@Autowired
 	@Qualifier(ActorConfig.RESEARCH_TRAINING_ACTOR)
 	private ActorRef researchTrainingActor;
-
 	@Autowired
 	private ActorSystem actorSystem;
 

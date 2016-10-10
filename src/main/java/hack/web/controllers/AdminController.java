@@ -2,10 +2,12 @@ package hack.web.controllers;
 
 import hack.core.actor.messages.ResearchMessage;
 import hack.core.config.security.RegistrationForm;
+import hack.core.dao.ConfigDAO;
 import hack.core.dao.LocationDAO;
 import hack.core.dao.PlayerDAO;
 import hack.core.dto.APIResultDTO;
 import hack.core.dto.APIResultType;
+import hack.core.models.Coord;
 import hack.core.models.Player;
 import hack.core.models.Research;
 import hack.core.services.LocationService;
@@ -38,6 +40,8 @@ public class AdminController {
 	private LocationDAO locationDAO;
 	@Autowired
 	private PlayerDAO playerDAO;
+	@Autowired
+	private ConfigDAO configDAO;
 
 	@RequestMapping("/admin")
 	public String appHome(Model model, Principal principle) {
@@ -52,7 +56,8 @@ public class AdminController {
 	public ResponseEntity<APIResultDTO> removeAllData() {
 		locationDAO.removeAllData();
 		playerDAO.removeAllData();
-
+		configDAO.saveNewestCoord(new Coord(0, 0));
+		
 		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, "Removed all data");
 
 		return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
@@ -87,7 +92,7 @@ public class AdminController {
 		registrationForm.setPassword("pass");
 		Player player = playerService.createNewPlayer(registrationForm);
 		for (Research research : player.getResearches()) {
-			for (int i = 1; i < 5; i++) {
+			for (int i = 1; i < 10; i++) {
 				ResearchMessage researchMessage = new ResearchMessage(player.getEmail(), research.getType(), new ObjectId().toString());
 				researchService.completeTraining(researchMessage);
 			}

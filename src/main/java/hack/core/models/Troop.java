@@ -3,12 +3,12 @@ package hack.core.models;
 public class Troop {
 
 	private TroopType type;
-	private int noOfTroops;
+	private long noOfTroops;
 
 	public Troop() {
 		super();
 	}
-	public Troop(TroopType type, int noOfTroops) {
+	public Troop(TroopType type, long noOfTroops) {
 		super();
 		this.type = type;
 		this.noOfTroops = noOfTroops;
@@ -22,11 +22,11 @@ public class Troop {
 		this.type = type;
 	}
 
-	public int getNoOfTroops() {
+	public long getNoOfTroops() {
 		return noOfTroops;
 	}
 
-	public void setNoOfTroops(int noOfTroops) {
+	public void setNoOfTroops(long noOfTroops) {
 		this.noOfTroops = noOfTroops;
 	}
 
