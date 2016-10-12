@@ -1,8 +1,8 @@
 var H = H || {};
 
-H.testResearch = (function() {
+H.generic = (function() {
 	var init = function(refresh) {
-		// console.log("testResearch init")
+		// console.log("generic init")
 		$("button[data-action]").click(function() {
 			var action = $(this).attr('data-action');
 			$.post(action, function(data) {
@@ -27,6 +27,32 @@ H.testResearch = (function() {
 			var selector = $(this).attr('data-hide');
 			$(selector).hide();
 		});
+		
+		var recruitmentForm = $("form.ajax");
+		recruitmentForm.submit(function(e) {
+			$.ajax({
+				type: recruitmentForm.attr('method'),
+				url: recruitmentForm.attr('action'),
+				data: recruitmentForm.serialize(),
+				success: function (data) {
+					var alertClass = "success";
+					var alertTitle = "Woohoo!";
+					if (data.result == "ERROR") {
+						alertClass = "danger";
+						alertTitle = "Oh no!";
+					}
+					if (data.result == "WARNING") {
+						alertClass = "warning";
+						alertTitle = "Err!";
+					}
+					var html = "<div class=\"alert alert-" + alertClass
+							+ "\"><strong>" + alertTitle + "</strong> "
+							+ data.message + "</div>";
+					$(".result").html(html);
+				}
+	        });
+			e.preventDefault();
+		});
 	};
 	return {
 		init : init
@@ -49,7 +75,7 @@ H.map = (function() {
 	
 	
 	var init = function(refresh) {
-		// console.log("testResearch init")
+		// console.log("generic init")
 		map = $("body.map");
 		if (map.length > 0) {
 			console.log("Init map");
@@ -118,7 +144,7 @@ H.map = (function() {
 			geometry.vertices.push( new THREE.Vector3( i -(size/2) + (defaults.tileSize/2), 0, 0 -(size/2) + (defaults.tileSize/2) ) );
 			geometry.vertices.push( new THREE.Vector3( i -(size/2) + (defaults.tileSize/2), 0, size-(size/2) + (defaults.tileSize/2)) );
 		}
-		var material = new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } );
+		var material = new THREE.LineBasicMaterial( { color: 0x999999, opacity: 1 } );
 		var line = new THREE.LineSegments( geometry, material );
 		scene.add( line );
 
@@ -130,17 +156,6 @@ H.map = (function() {
 		
 		var geometry = new THREE.BoxGeometry( defaults.tileSize, defaults.tileSize, defaults.tileSize );
 		var material = new THREE.MeshLambertMaterial( { color: 0xffffff, overdraw: 0.5 } );
-		/*for ( var i = 0; i < 50; i ++ ) {
-			var cube = new THREE.Mesh( geometry, material );
-			cube.scale.y = Math.floor( Math.random() * 2 + 1 );
-			cube.position.x = Math.floor( ( Math.random() * 500 - 250 ) / defaults.tileSize ) * defaults.tileSize + (defaults.tileSize / 2);
-			
-			cube.position.y = ( cube.scale.y * 25 ) / 2;
-			cube.position.z = Math.floor( ( Math.random() * 500 - 250 ) / defaults.tileSize ) * defaults.tileSize + (defaults.tileSize / 2);
-			
-			console.log(cube.position);
-			//scene.add( cube );
-		}*/
 		
 		locationGroup = new THREE.Group();
 		
@@ -175,6 +190,9 @@ H.map = (function() {
 			
 			var cube = new THREE.Mesh( geometry, material );
 			cube.scale.y = scale;
+			cube.scale.x = 0.95;
+			cube.scale.z = 0.95;
+//			console.log(cube.scale)
 			cube.position.y = ( cube.scale.y * defaults.tileSize ) / 2;
 			cube.position.x = (location.x + offset.x) * defaults.tileSize;//* defaults.tileSize + (defaults.tileSize / 2);
 			cube.position.z = (location.y + offset.y) * defaults.tileSize;//* defaults.tileSize + (defaults.tileSize / 2);
@@ -187,9 +205,9 @@ H.map = (function() {
 				console.log(cubeCentre);
 				camera.lookAt(cubeCentre);
 				
-				console.log(data.items[i]);
-			    console.log(location.x + " - " + location.y);
-			    console.log(cube.position.x + " - " + cube.position.z);
+//				console.log(data.items[i]);
+//			    console.log(location.x + " - " + location.y);
+//			    console.log(cube.position.x + " - " + cube.position.z);
 			}
 		}
 
@@ -218,7 +236,8 @@ H.map = (function() {
 		//scene.add( directionalLight2 );
 		
 		// Renderer
-		renderer = new THREE.CanvasRenderer(map);
+//		renderer = new THREE.CanvasRenderer(map);
+		renderer = new THREE.WebGLRenderer();
 		renderer.setClearColor( 0xf0f0f0 );
 		renderer.setPixelRatio( window.devicePixelRatio );
 		var width = container.width();
@@ -244,7 +263,7 @@ H.map = (function() {
 		controls.keys = [];
 		controls.addEventListener( 'change', render );
 		controls.minDistance = defaults.cameraHeight;
-		controls.maxDistance = defaults.cameraHeight * 8;
+		controls.maxDistance = defaults.cameraHeight * 12;
 //		console.log(controls);
 		
 	}
@@ -303,7 +322,7 @@ H.map = (function() {
 //					$(".location-popup button").click(function() {
 //						console.log("CLICKED: " + $(this).attr("data"));
 //					});
-					H.testResearch.init();
+					H.generic.init();
 					INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 					INTERSECTED.material.color.setHex( 0xffff00 );
 				}
@@ -420,6 +439,6 @@ H.map = (function() {
 window.H = H;
 
 $(document).ready(function() {
-	H.testResearch.init();
+	H.generic.init();
 	H.map.init();
 });

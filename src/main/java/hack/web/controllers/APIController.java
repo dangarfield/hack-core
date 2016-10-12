@@ -13,6 +13,7 @@ import hack.core.models.TroopType;
 import hack.core.services.AttackService;
 import hack.core.services.LocationService;
 import hack.core.services.PlayerService;
+import hack.core.services.RecruitmentService;
 import hack.core.services.ResearchService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,11 @@ public class APIController {
 	private AttackService attackService;
 	@Autowired
 	private LocationService locationService;
+	@Autowired
+	private RecruitmentService recruitmentService;
 	
-	@PostMapping("/api/start.training")
-	public ResponseEntity<APIResultDTO> startTraining(@RequestParam(value = "type") ResearchType type) {
+	@PostMapping("/api/research.start")
+	public ResponseEntity<APIResultDTO> researchStart(@RequestParam(value = "type") ResearchType type) {
 		
 		Player player = playerService.getCurrentPlayer();
 		APIResultDTO result = researchService.triggerUpgrade(player, type);
@@ -83,6 +86,15 @@ public class APIController {
 		LocationMapDTO map = locationService.getMapByCentrepoint(player, ip);
 		
 		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, map);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	
+	@PostMapping("/api/recruitment.start")
+	public ResponseEntity<APIResultDTO> recruitmentStart(@RequestParam(value = "ip") String ip, @RequestParam(value = "type") TroopType type, @RequestParam(value = "no") long no) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = recruitmentService.recruit(player, ip, type, no);
 		
 	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}

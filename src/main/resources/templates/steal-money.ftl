@@ -15,14 +15,14 @@
 			<ul>
 				<li><strong>Money:</strong> ${player.money}</li>
 				<li><strong>MONEY_ATTACK:</strong> ${player.researchOfType('MONEY_ATTACK').level}</li>
-				<li><strong>RESEARCH_HIDE:</strong> ${player.researchOfType('RESEARCH_HIDE').level}</li>
+				<li><strong>SCAN_POWER:</strong> ${player.researchOfType('SCAN_POWER').level}</li>
 			</ul>
 			<ul>
 				<#list targetLocations as targetLocation>
 					<li>
 						${targetLocation.location.ip} - Hide level: ${targetLocation.location.researchHideLevel} - Cooldown: <#if targetLocation.cooldownTime??>${targetLocation.cooldownTime?string('HH:mm:ss')}<#else>None</#if>
 						<button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.scan?ip=${targetLocation.location.ip}">Scan</button>
-						<button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.steal-money?ip=${targetLocation.location.ip}">Attack</button>
+						<button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.steal-money?ip=${targetLocation.location.ip}">Steal</button>
 					</li>
 				</#list>
 			</ul>

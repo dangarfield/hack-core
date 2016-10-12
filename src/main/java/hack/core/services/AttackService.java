@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import hack.core.actor.config.ActorConfig;
 import hack.core.actor.messages.AttackMessage;
@@ -41,7 +42,7 @@ public class AttackService {
 	@Autowired
 	private ActorSystem actorSystem;
 	
-	public APIResultDTO stealMoneyAttack(Player source, String targetIp) {
+	public APIResultDTO stealMoneyAttack(Player sourcePlayer, String targetIp) {
 		
 		//Validate IP
 		Player targetPlayer = playerService.getPlayerByLocationIP(targetIp);
@@ -51,29 +52,34 @@ public class AttackService {
 		
 		APIResultType result = APIResultType.WARNING;
 		String message = "Error, something went wrong";
-		
+		boolean success = false;
 		// Have I attacked recently?
-		if(source.getRecentAttackForIp(targetIp) != null) {
+		if(sourcePlayer.getRecentAttackForIp(targetIp) != null) {
 			return new APIResultDTO(APIResultType.WARNING, "You have recently attacked: " + targetIp);
 		}
 		
 		// Who won?
-		int attack = source.researchOfType(ResearchType.MONEY_ATTACK).getLevel();
+		int attack = sourcePlayer.researchOfType(ResearchType.MONEY_ATTACK).getLevel();
 		int defense = targetPlayer.researchOfType(ResearchType.MONEY_DEFENSE).getLevel();
-
+		
 		if (attack > defense) {
 			int amount = (int) Math.ceil(targetPlayer.getMoney() / 100.0 * 35.0); //35%
-			source.setMoney(source.getMoney() + amount);
+			sourcePlayer.setMoney(sourcePlayer.getMoney() + amount);
 			targetPlayer.setMoney(targetPlayer.getMoney() - amount);
 			result = APIResultType.SUCCESS;
+			success = true;
 			message = "Gained £"+amount;
 		} else {
 			message = "Attack failed";
 		}
-		AttackLog attackLog = new AttackLog(AttackType.STEAL_MONEY, new Date(), source.getName(), targetIp, result, message);
+		AttackLog attackLog = new AttackLog(AttackType.STEAL_MONEY, new Date(), sourcePlayer.getName(), targetIp, success, message);
 		
-		source.getStealMoneyAttackCooldown().add(attackLog);
-		playerService.save(source);
+		//TODO - Need to validate that this method of ensuring only recent dates are here works / is performant
+		Date cutoff = new Date(new Date().getTime() - (60 * 60 * 1000));
+		sourcePlayer.setStealMoneyAttackCooldown(sourcePlayer.getStealMoneyAttackCooldown().stream().filter(a -> a.getTime().after(cutoff)).collect(Collectors.toList()));
+		sourcePlayer.getStealMoneyAttackCooldown().add(attackLog);
+		playerService.save(sourcePlayer);
+		targetPlayer.setStealMoneyAttackCooldown(targetPlayer.getStealMoneyAttackCooldown().stream().filter(a -> a.getTime().after(cutoff)).collect(Collectors.toList()));
 		targetPlayer.getStealMoneyAttackCooldown().add(attackLog);
 		playerService.save(targetPlayer);
 		
@@ -113,7 +119,7 @@ public class AttackService {
 		// Calculate attack time
 		Date startTime = new Date();
 		long transitTimeInSeconds = locationService.calculateAttackTransitTime(source, target);
-		transitTimeInSeconds = 5; //TODO - Remove this when testing is finished
+		transitTimeInSeconds = 30; //TODO - Remove this when testing is finished
 		Date arrivalTime = new Date(startTime.getTime() + (transitTimeInSeconds * 1000));
 		
 		// Have I got enough troops?
@@ -169,8 +175,8 @@ public class AttackService {
 		}
 		
 		// Who won?
-		int attack = source.researchOfType(ResearchType.RESEARCH_HIDE).getLevel();
-		int defense = targetPlayer.researchOfType(ResearchType.RESEARCH_HIDE).getLevel();
+		int attack = source.researchOfType(ResearchType.SCAN_POWER).getLevel();
+		int defense = targetPlayer.researchOfType(ResearchType.SCAN_POWER).getLevel();
 
 		if (attack > defense) {
 			result = APIResultType.SUCCESS;
@@ -261,9 +267,10 @@ public class AttackService {
 			target.setResearchHideLevel(source.getResearchHideLevel());
 			sourcePlayer.getLocationIps().add(target.getIp());
 			targetPlayer.getLocationIps().remove(target.getIp());
-			
+			System.out.println("Attack success");
 		} else {
 			target.setDefense(defendingRemaining);
+			System.out.println("Defence success");
 		}
 		
 		locationService.save(source);

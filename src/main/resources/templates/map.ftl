@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<meta name="description" content="" />
-<meta name="author" content="" />
-<link rel="icon" href="/img/favicon.ico"></link>
+<#include "snippets/head.ftl">
 
 <title><#if pageTitle??>${pageTitle}</#if> | Hack Core</title>
 
@@ -15,6 +10,7 @@
 		background-color: #f0f0f0;
 		margin: 0px;
 		overflow: hidden;
+		padding: 0;
 	}
 	
 	.location-popup {
@@ -31,15 +27,30 @@
 	}
 	.overlay {
 		position: fixed;
+		top: 50px;
+		left:0;
+		cursor: pointer;
+		z-index: 10000;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		background: black;
+		color: white;
+	}
+	.selector {
+		position: fixed;
 		top: 0;
 		left:0;
 		cursor: pointer;
 		height: 50px;
 		z-index: 10000;
 		width: 100%;
-		height: 100%;
+		height: 50px;
 		text-align: center;
 		background: black;
+		color: white;
+	}
+	.selector a {
 		color: white;
 	}
 </style>
@@ -54,11 +65,19 @@
 
 	</script>
 	
-	
+	<div class="selector">
+		<span class="prev">
+		<#if prev??><a href="/app/map?ip=${prev}">Prev</a></#if>
+		</span>
+		<span class="current">${location.ip}</span>
+		<span class="next">
+		<#if next??><a href="/app/map?ip=${next}">Next</a></#if>
+		</span>
+	</div>
 	<div class="overlay" style="display:none">
 		<p class="heading"></p>
 		<p>Troop Selection</p>
-		<#list locations?first.defense as troop>
+		<#list location.defense as troop>
 		    <p>
 		    	<label for="${troop.type}">${troop.type}</label>
 		    	<input type="range" min="0" max="${troop.noOfTroops}" value="${troop.noOfTroops}" id="${troop.type}" oninput="H.map.updateTakeoverUrl('${troop.type}',value)">

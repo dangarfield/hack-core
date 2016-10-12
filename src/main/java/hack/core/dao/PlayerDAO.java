@@ -1,9 +1,13 @@
 package hack.core.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hack.core.models.Player;
 
 import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
+import org.jongo.Aggregate.ResultsIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,5 +39,23 @@ public class PlayerDAO {
 
 	public Player getUserById(ObjectId playerId) {
 		return players.findOne("{_id:#}",playerId).as(Player.class);
+	}
+	
+	public List<ResearchEntry> getResearchesForRestart() {
+		List<ResearchEntry> entries = new ArrayList<ResearchEntry>();
+
+		ResultsIterator<ResearchEntry> agg = players
+				.aggregate("{$match : {\"researches.currentlyTraining.id\": {$exists:true} } }")
+				.and("{$unwind : \"$researches\" }")
+				.and("{$match : {\"researches.currentlyTraining.id\": {$exists:true} } }")
+				.and("{$unwind : \"$researches.currentlyTraining\" }")
+				.and("{$project : {_id:0,\"trainingResearch\":\"$researches.currentlyTraining\",\"researchMessage.playerEmail\":\"$email\",\"researchMessage.type\":\"$researches.type\",\"researchMessage.id\":\"$researches.currentlyTraining.id\"}}")
+				.as(ResearchEntry.class);
+
+		for (ResearchEntry entry : agg) {
+			entries.add(entry);
+		}
+
+		return entries;
 	}
 }

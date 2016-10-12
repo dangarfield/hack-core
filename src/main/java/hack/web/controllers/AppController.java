@@ -3,6 +3,7 @@ package hack.web.controllers;
 import hack.core.dto.LocationStealMoneyDTO;
 import hack.core.models.Location;
 import hack.core.models.Player;
+import hack.core.models.TroopType;
 import hack.core.services.LocationService;
 import hack.core.services.PlayerService;
 
@@ -32,6 +33,7 @@ public class AppController {
 		List<Location> locations = locationService.getLocationsForPlayer(player);
 		model.addAttribute("player", player);
 		model.addAttribute("locations", locations);
+		model.addAttribute("troopTypes", TroopType.values());
 		model.addAttribute("pageTitle", "App");
 
 		return "app";
@@ -58,16 +60,26 @@ public class AppController {
 		List<Location> locations = locationService.getLocationsForPlayer(player);
 
 		Location location = null;
-		for (Location loc : locations) {
-			if (loc.getIp().equals(ip)) {
+		String prev = null;
+		String next = null;
+		
+		int locSize = locations.size();
+		int foundLocPos = 0;
+		for (int i = 0; i < locSize; i++) {
+			Location loc = locations.get(i);
+			if(loc.getIp().equals(ip)) {
+				foundLocPos = i;
 				location = loc;
-				break;
 			}
 		}
-		if (location == null) {
+		if(foundLocPos == 0) {
 			location = locations.get(0);
+		} else {
+			prev = locations.get(foundLocPos - 1).getIp();
 		}
-			
+		if(foundLocPos < locSize -1) {
+			next = locations.get(foundLocPos + 1).getIp();
+		}
 
 		Gson gson = new Gson();
 		model.addAttribute("player", player);
@@ -75,6 +87,8 @@ public class AppController {
 		model.addAttribute("locationsJson", gson.toJson(locations));
 		model.addAttribute("location", location);
 		model.addAttribute("locationJson", gson.toJson(location));
+		model.addAttribute("next",next);
+		model.addAttribute("prev",prev);
 		model.addAttribute("pageTitle", "Map");
 
 		return "map";

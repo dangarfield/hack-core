@@ -1,6 +1,5 @@
 package hack.core.models;
 
-import hack.core.dto.APIResultType;
 
 import java.util.Date;
 
@@ -10,20 +9,20 @@ public class AttackLog {
 	private Date time;
 	private String sourceIp;
 	private String targetIp;
-	private APIResultType result;
+	private boolean success;
 	private String message;
 
 	public AttackLog() {
 		super();
 	}
 
-	public AttackLog(AttackType type, Date time, String sourceIp, String targetIp, APIResultType result, String message) {
+	public AttackLog(AttackType type, Date time, String sourceIp, String targetIp, boolean success, String message) {
 		super();
 		this.type = type;
 		this.time = time;
 		this.sourceIp = sourceIp;
 		this.targetIp = targetIp;
-		this.result = result;
+		this.success = success;
 		this.message = message;
 	}
 
@@ -59,12 +58,12 @@ public class AttackLog {
 		this.targetIp = targetIp;
 	}
 
-	public APIResultType getResult() {
-		return result;
+	public boolean isSuccess() {
+		return success;
 	}
 
-	public void setResult(APIResultType result) {
-		this.result = result;
+	public void setSuccess(boolean success) {
+		this.success = success;
 	}
 
 	public String getMessage() {

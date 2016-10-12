@@ -46,7 +46,7 @@ public class ResearchService {
 			return new APIResultDTO(APIResultType.ERROR, "Unknown research type: " + researchType);
 		}
 		// Check current research level
-		int maxLevel = maxResearchLevel(player);
+		int maxLevel = maxResearchLevel(player, researchType);
 		int desiredLevelMinusOne = research.getLevel() + research.getCurrentlyTraining().size();
 		if (maxLevel <= desiredLevelMinusOne) {
 			return new APIResultDTO(APIResultType.ERROR, "Your current max research level is " + maxLevel);
@@ -93,35 +93,41 @@ public class ResearchService {
 		TrainingResearch currentTraining = research.getCurrentTrainingByID(researchMessage.getId());
 		research.getCurrentlyTraining().remove(currentTraining);
 		playerDAO.save(player);
-		if(research.getType().equals(ResearchType.RESEARCH_HIDE)) {
+		if(research.getType().equals(ResearchType.SCAN_POWER)) {
 			locationService.incrementAllOfAPlayersLocationsResearchHideLevel(player);
 		}
 		LOG.info("Completed training: " + player.getEmail() + " - " + research.getType() + " - " + research.getLevel());
 	}
 
-	private long researchUpgradeCost(ResearchType type, int level) {
+	private long researchUpgradeCost(ResearchType researchType, int level) {
 		// level squared * weight (1.2 ish) * research
 
+		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
+			return level * 100000;
+		}
+		
 		long cost = 5000 + (level * level);
 
-		// TODO - add research type weight
-		// TODO - add learned research weight
 		return cost;
 	}
 
-	private int researchUpgradeTime(ResearchType type, int level) {
+	private int researchUpgradeTime(ResearchType researchType, int level) {
 		// (level * 8) + 60 * weight (1.2 ish) seconds
+		
+		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
+			return level * 60 * 60 ;
+		}
+		
 		int seconds = 60 + (level * 8);
 
-		// TODO - add research type weight
-		// TODO - add learned research weight
 		return seconds;
 	}
 
-	private int maxResearchLevel(Player player) {
-		// TODO - Not all researches want to be exponentially increased
-		
-		return player.getLocationIps().size() * 20;
+	private int maxResearchLevel(Player player, ResearchType researchType) {
+		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
+			return 10;
+		}
+		return player.getLocationIps().size() * 10;
 	}
 
 	private int maxParallelResearchTraining(Player player) {

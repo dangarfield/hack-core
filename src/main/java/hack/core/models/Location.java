@@ -19,14 +19,14 @@ public class Location {
 	private List<Troop> defense;
 	private List<TransitTroop> attackIn;
 	private List<TransitTroop> attackOut;
+	private List<TrainingTroop> recruiting;
 
 	public Location() {
 		super();
-
 		this.defense = new ArrayList<Troop>();
-
 		this.attackIn = new ArrayList<TransitTroop>();
 		this.attackOut = new ArrayList<TransitTroop>();
+		this.recruiting = new ArrayList<TrainingTroop>();
 	}
 
 	public String getIp() {
@@ -91,6 +91,14 @@ public class Location {
 
 	public void setAttackOut(List<TransitTroop> attackOut) {
 		this.attackOut = attackOut;
+	}
+
+	public List<TrainingTroop> getRecruiting() {
+		return recruiting;
+	}
+
+	public void setRecruiting(List<TrainingTroop> recruiting) {
+		this.recruiting = recruiting;
 	}
 
 }

@@ -2,6 +2,7 @@ package hack.core.actor.config;
 
 import hack.core.actor.AttackActor;
 import hack.core.actor.ResearchTrainingActor;
+import hack.core.actor.RecruitmentActor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -18,6 +19,7 @@ public class ActorConfig {
 	public static final String ACTOR_SYSTEM = "hack-actor-actorSystem";
 	public static final String RESEARCH_TRAINING_ACTOR = "research-training-actor";
 	public static final String ATTACK_ACTOR = "attack-actor";
+	public static final String RECRUITMENT_ACTOR = "recuirtment-actor";
 
 	private ActorSystem actorSystem;
 
@@ -41,5 +43,11 @@ public class ActorConfig {
 	public ActorRef attackActor() {
 		return actorSystem.actorOf(//
 				new DependencyInjectionProps(applicationContext, AttackActor.class), ATTACK_ACTOR);
+	}
+	@Bean(name = RECRUITMENT_ACTOR)
+	@DependsOn({ ACTOR_SYSTEM })
+	public ActorRef recruitmentActor() {
+		return actorSystem.actorOf(//
+				new DependencyInjectionProps(applicationContext, RecruitmentActor.class), RECRUITMENT_ACTOR);
 	}
 }

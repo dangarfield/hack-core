@@ -3,8 +3,10 @@ package hack.core.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import hack.core.actor.messages.RecruitmentMessage;
 import hack.core.models.Location;
 import hack.core.models.Player;
+import hack.core.models.TransitTroop;
 
 import org.jongo.Aggregate.ResultsIterator;
 import org.jongo.MongoCollection;
@@ -60,7 +62,7 @@ public class LocationDAO {
 
 	public List<MapTileEntry> getMapTile(Player player, int x, int y) {
 		List<MapTileEntry> mapTile = new ArrayList<MapTileEntry>();
-		
+
 		int xMax = x + 100;
 		int yMax = y + 100;
 		StringBuilder match = new StringBuilder();
@@ -85,5 +87,33 @@ public class LocationDAO {
 			mapTile.add(new MapTileEntry(location.getIp(), location.getCoord(), location.getPlayer(), location.isNpc()));
 		}
 		return mapTile;
+	}
+
+	public List<RecruitmentMessage> getRecruitingForRestart() {
+		// TODO - Do this properly
+		List<RecruitmentMessage> messages = new ArrayList<RecruitmentMessage>();
+		ResultsIterator<RecruitmentMessage> agg = locations.aggregate("{$match : {\"recruiting\": {$not: {$size:0} } }}")
+				.and("{$unwind : \"$recruiting\" }")
+				.and("{$project: {_id:0,ip:\"$_id\",type:\"$recruiting.type\",recruitmentTime:\"$recruiting.recruitmentTime\"}}")
+				.as(RecruitmentMessage.class);
+		for (RecruitmentMessage message : agg) {
+			messages.add(message);
+		}
+		return messages;
+	}
+
+	public List<List<TransitTroop>> getTransitTroopsForRestart() {
+		List<List<TransitTroop>> listOfLists = new ArrayList<>();
+
+		ResultsIterator<TakeoverTroopsEntry> agg = locations
+				.aggregate("{$match : {\"attackOut\": {$not: {$size:0} } }}")
+				.and("{$unwind : \"$attackOut\" }")
+				.and("{$group: {_id : {\"source\":\"$attackOut.source\", \"target\":\"$attackOut.target\", \"arrival\":\"$attackOut.arrival\"},troops : {$push:\"$attackOut\"}}}")
+				.and("{$project: {_id:0,troops:1}}").as(TakeoverTroopsEntry.class);
+
+		for (TakeoverTroopsEntry entry : agg) {
+			listOfLists.add(entry.getTroops());
+		}
+		return listOfLists;
 	}
 }

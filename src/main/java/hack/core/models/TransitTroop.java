@@ -42,16 +42,17 @@ public class TransitTroop extends Troop {
 	public void setArrival(Date arrival) {
 		this.arrival = arrival;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-	    if(obj instanceof TransitTroop) {
-	        TransitTroop o = (TransitTroop) obj;
-	        if(o.getType().equals(this.getType()) && o.getNoOfTroops() == this.getNoOfTroops() && o.getSource().equals(this.getSource()) && o.getTarget().equals(this.getTarget()) && o.getArrival().equals(this.getArrival())) {
-	        	return true;
-	        }
-	    }
-	    return false;
+		if (obj instanceof TransitTroop) {
+			TransitTroop o = (TransitTroop) obj;
+			if (o.getType().equals(this.getType()) && o.getNoOfTroops() == this.getNoOfTroops() && o.getSource().equals(this.getSource())
+					&& o.getTarget().equals(this.getTarget()) && o.getArrival().equals(this.getArrival())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

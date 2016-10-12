@@ -25,11 +25,13 @@ public class Player {
 	private long money;
 
 	private List<AttackLog> stealMoneyAttackCooldown;
+	private List<AttackLog> takeovers;
 
 	public Player() {
 		super();
 		this.locationIps = new ArrayList<String>();
 		this.stealMoneyAttackCooldown = new ArrayList<AttackLog>();
+		this.takeovers = new ArrayList<AttackLog>();
 	}
 
 	public ObjectId getId() {
@@ -102,6 +104,14 @@ public class Player {
 
 	public void setStealMoneyAttackCooldown(List<AttackLog> stealMoneyAttackCooldown) {
 		this.stealMoneyAttackCooldown = stealMoneyAttackCooldown;
+	}
+
+	public List<AttackLog> getTakeovers() {
+		return takeovers;
+	}
+
+	public void setTakeovers(List<AttackLog> takeovers) {
+		this.takeovers = takeovers;
 	}
 
 	public Research researchOfType(String type) {
