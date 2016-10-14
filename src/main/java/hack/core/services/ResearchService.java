@@ -14,7 +14,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import hack.core.actor.config.ActorConfig;
 import hack.core.actor.messages.ResearchMessage;
-import hack.core.dao.PlayerDAO;
 import hack.core.dto.APIResultDTO;
 import hack.core.dto.APIResultType;
 import hack.core.models.Player;
@@ -26,9 +25,9 @@ import hack.core.models.TrainingResearch;
 public class ResearchService {
 
 	private static final Logger LOG = Logger.getLogger("ResearchService");
-	
+
 	@Autowired
-	private PlayerDAO playerDAO;
+	private PlayerService playerService;
 	@Autowired
 	private LocationService locationService;
 
@@ -77,7 +76,7 @@ public class ResearchService {
 		research.getCurrentlyTraining().add(trainingResearch);
 
 		// Save player
-		playerDAO.save(player);
+		playerService.save(player);
 
 		// Trigger research actor
 		ResearchMessage researchMessage = new ResearchMessage(player.getEmail(), researchType, trainingResearch.getId());
@@ -87,25 +86,28 @@ public class ResearchService {
 	}
 
 	public void completeTraining(ResearchMessage researchMessage) {
-		Player player = playerDAO.getUserByEmail(researchMessage.getPlayerEmail());
+		Player player = playerService.getUserByEmail(researchMessage.getPlayerEmail());
 		Research research = player.researchOfType(researchMessage.getType());
 		research.setLevel(research.getLevel() + 1);
 		TrainingResearch currentTraining = research.getCurrentTrainingByID(researchMessage.getId());
 		research.getCurrentlyTraining().remove(currentTraining);
-		playerDAO.save(player);
-		if(research.getType().equals(ResearchType.SCAN_POWER)) {
-			locationService.incrementAllOfAPlayersLocationsResearchHideLevel(player);
-		}
+		playerService.save(player);
+		amendWhereResearchUpgradeAffectsNonPlayerLevel(research.getType(), player, 1);
 		LOG.info("Completed training: " + player.getEmail() + " - " + research.getType() + " - " + research.getLevel());
 	}
 
+	public void amendWhereResearchUpgradeAffectsNonPlayerLevel(ResearchType researchType, Player player, int level) {
+		if (researchType.equals(ResearchType.SCAN_POWER)) {
+			locationService.incrementAllOfAPlayersLocationsResearchHideLevel(player, level);
+		}
+	}
 	private long researchUpgradeCost(ResearchType researchType, int level) {
 		// level squared * weight (1.2 ish) * research
 
-		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
+		if (isResearchTypeMaxLevelCapped(researchType)) {
 			return level * 100000;
 		}
-		
+
 		long cost = 5000 + (level * level);
 
 		return cost;
@@ -113,18 +115,18 @@ public class ResearchService {
 
 	private int researchUpgradeTime(ResearchType researchType, int level) {
 		// (level * 8) + 60 * weight (1.2 ish) seconds
-		
-		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
-			return level * 60 * 60 ;
+
+		if (isResearchTypeMaxLevelCapped(researchType)) {
+			return level * 60 * 60;
 		}
-		
+
 		int seconds = 60 + (level * 8);
 
 		return seconds;
 	}
 
 	private int maxResearchLevel(Player player, ResearchType researchType) {
-		if(researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED) || researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL) || researchType.equals(ResearchType.RECRUITMENT_COST)) {
+		if (isResearchTypeMaxLevelCapped(researchType)) {
 			return 10;
 		}
 		return player.getLocationIps().size() * 10;
@@ -132,5 +134,16 @@ public class ResearchService {
 
 	private int maxParallelResearchTraining(Player player) {
 		return player.researchOfType(ResearchType.UPGRADE_PARALLEL).getLevel();
+	}
+
+	public boolean isResearchTypeMaxLevelCapped(ResearchType researchType) {
+		if (researchType.equals(ResearchType.UPGRADE_PARALLEL) || researchType.equals(ResearchType.UPGRADE_SPEED)
+				|| researchType.equals(ResearchType.MONEY_RESERVED) || researchType.equals(ResearchType.MONEY_PASSIVE)
+				|| researchType.equals(ResearchType.RECRUITMENT_SPEED) || researchType.equals(ResearchType.RECRUITMENT_PARALLEL)
+				|| researchType.equals(ResearchType.RECRUITMENT_COST) || researchType.equals(ResearchType.MISSIONS_LEVEL)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

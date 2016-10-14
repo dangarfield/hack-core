@@ -99,8 +99,8 @@ public class LocationService {
 		return dtos;
 	}
 
-	public void incrementAllOfAPlayersLocationsResearchHideLevel(Player player) {
-		locationDAO.incrementAllOfAPlayersLocationsResearchHideLevel(player, 1);
+	public void incrementAllOfAPlayersLocationsResearchHideLevel(Player player, int level) {
+		locationDAO.incrementAllOfAPlayersLocationsResearchHideLevel(player, level);
 	}
 
 	public List<LocationMapItemDTO> getMapByTiles(Player player) {
@@ -156,7 +156,7 @@ public class LocationService {
 
 	public long calculateAttackTransitTime(Location source, Location target) {
 		double distance = calculateDistance(source.getCoord(), target.getCoord());
-		long time = (long) distance * 60 * 60;
+		long time = (long) distance * 60 * 30; //1 distance = 30 mins
 		return time;
 	}
 	private double calculateDistance(Coord p1, Coord p2) {
@@ -180,6 +180,10 @@ public class LocationService {
 
 	public void save(Location location) {
 		locationDAO.saveLocation(location);
+	}
+
+	public Location getRandomLocationForPlayer(Player player) {
+		return locationDAO.getRandomLocationForPlayer(player);
 	}
 	
 }

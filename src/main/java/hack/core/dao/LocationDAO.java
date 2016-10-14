@@ -6,7 +6,6 @@ import java.util.List;
 import hack.core.actor.messages.RecruitmentMessage;
 import hack.core.models.Location;
 import hack.core.models.Player;
-import hack.core.models.TransitTroop;
 
 import org.jongo.Aggregate.ResultsIterator;
 import org.jongo.MongoCollection;
@@ -102,18 +101,28 @@ public class LocationDAO {
 		return messages;
 	}
 
-	public List<List<TransitTroop>> getTransitTroopsForRestart() {
-		List<List<TransitTroop>> listOfLists = new ArrayList<>();
+	public List<TakeoverTroopsEntry> getTransitTroopsForRestart() {
+		List<TakeoverTroopsEntry> listOfLists = new ArrayList<TakeoverTroopsEntry>();
 
 		ResultsIterator<TakeoverTroopsEntry> agg = locations
 				.aggregate("{$match : {\"attackOut\": {$not: {$size:0} } }}")
 				.and("{$unwind : \"$attackOut\" }")
 				.and("{$group: {_id : {\"source\":\"$attackOut.source\", \"target\":\"$attackOut.target\", \"arrival\":\"$attackOut.arrival\"},troops : {$push:\"$attackOut\"}}}")
-				.and("{$project: {_id:0,troops:1}}").as(TakeoverTroopsEntry.class);
+				.and("{$project: {_id:0,troops:1,ceo:1}}").as(TakeoverTroopsEntry.class);
 
 		for (TakeoverTroopsEntry entry : agg) {
-			listOfLists.add(entry.getTroops());
+			listOfLists.add(entry);
 		}
 		return listOfLists;
+	}
+
+	public Location getRandomLocationForPlayer(Player player) {
+		ResultsIterator<Location> locationCursor = locations.aggregate("{$match:{player:#}}", player.getId()).and("{$sample:{size:#}}", 1)
+				.as(Location.class);
+		if (locationCursor.hasNext()) {
+			return locationCursor.next();
+		} else {
+			return null;
+		}
 	}
 }

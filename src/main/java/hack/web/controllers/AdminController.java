@@ -8,9 +8,11 @@ import hack.core.dto.APIResultDTO;
 import hack.core.dto.APIResultType;
 import hack.core.models.Coord;
 import hack.core.services.LocationService;
+import hack.core.services.PassiveMoneyService;
 import hack.core.services.PlayerService;
 import hack.core.services.ResearchService;
 import hack.core.services.RestartAkkaJobsService;
+import hack.core.dao.BattleReportDAO;
 
 import java.security.Principal;
 import java.util.Random;
@@ -36,6 +38,10 @@ public class AdminController {
 	@Autowired
 	private RestartAkkaJobsService restartAkkaJobsService;
 	@Autowired
+	private PassiveMoneyService passiveMoneyService;
+	@Autowired
+	private BattleReportDAO battleReportDAO;
+	@Autowired
 	private LocationDAO locationDAO;
 	@Autowired
 	private PlayerDAO playerDAO;
@@ -56,7 +62,8 @@ public class AdminController {
 		locationDAO.removeAllData();
 		playerDAO.removeAllData();
 		configDAO.saveNewestCoord(new Coord(0, 0));
-		
+		battleReportDAO.removeAllData();
+
 		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, "Removed all data");
 
 		return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
@@ -90,19 +97,20 @@ public class AdminController {
 		registrationForm.setPassword("pass");
 		registrationForm.setPassword("pass");
 		playerService.createNewPlayer(registrationForm);
-//		for (Research research : player.getResearches()) {
-//			for (int i = 1; i < 10; i++) {
-//				ResearchMessage researchMessage = new ResearchMessage(player.getEmail(), research.getType(), new ObjectId().toString());
-//				researchService.completeTraining(researchMessage);
-//			}
-//		}
-		
-		
+		// for (Research research : player.getResearches()) {
+		// for (int i = 1; i < 10; i++) {
+		// ResearchMessage researchMessage = new
+		// ResearchMessage(player.getEmail(), research.getType(), new
+		// ObjectId().toString());
+		// researchService.completeTraining(researchMessage);
+		// }
+		// }
+
 		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, "Created d@g.com user");
 
 		return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/admin/api/restart.akka-jobs")
 	public ResponseEntity<APIResultDTO> restartAkkaJobs() {
 
@@ -112,4 +120,13 @@ public class AdminController {
 		return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}
 
+	@PostMapping("/admin/api/passive-money.start")
+	public ResponseEntity<APIResultDTO> passiveMoneyStart() {
+
+		passiveMoneyService.initialisePassiveMoney();
+
+		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, "Passive Money collection started");
+
+		return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
 }

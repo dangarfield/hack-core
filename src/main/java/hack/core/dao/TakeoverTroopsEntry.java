@@ -7,7 +7,8 @@ import hack.core.models.TransitTroop;
 public class TakeoverTroopsEntry {
 
 	private List<TransitTroop> troops;
-
+	private int ceo;
+	
 	public TakeoverTroopsEntry() {
 		super();
 	}
@@ -18,6 +19,14 @@ public class TakeoverTroopsEntry {
 
 	public void setTroops(List<TransitTroop> troops) {
 		this.troops = troops;
+	}
+
+	public int getCeo() {
+		return ceo;
+	}
+
+	public void setCeo(int ceo) {
+		this.ceo = ceo;
 	}
 
 }

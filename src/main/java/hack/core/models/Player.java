@@ -3,6 +3,7 @@ package hack.core.models;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -24,14 +25,16 @@ public class Player {
 
 	private long money;
 
-	private List<AttackLog> stealMoneyAttackCooldown;
-	private List<AttackLog> takeovers;
+	private Logs logs;
+	private int ceoCount;
 
+	private List<MissionInProgress> missions;
+	
 	public Player() {
 		super();
 		this.locationIps = new ArrayList<String>();
-		this.stealMoneyAttackCooldown = new ArrayList<AttackLog>();
-		this.takeovers = new ArrayList<AttackLog>();
+		this.missions = new ArrayList<MissionInProgress>();
+		this.logs = new Logs();
 	}
 
 	public ObjectId getId() {
@@ -98,20 +101,29 @@ public class Player {
 		this.money = money;
 	}
 
-	public List<AttackLog> getStealMoneyAttackCooldown() {
-		return stealMoneyAttackCooldown;
+
+	public Logs getLogs() {
+		return logs;
 	}
 
-	public void setStealMoneyAttackCooldown(List<AttackLog> stealMoneyAttackCooldown) {
-		this.stealMoneyAttackCooldown = stealMoneyAttackCooldown;
+	public void setLogs(Logs logs) {
+		this.logs = logs;
 	}
 
-	public List<AttackLog> getTakeovers() {
-		return takeovers;
+	public int getCeoCount() {
+		return ceoCount;
 	}
 
-	public void setTakeovers(List<AttackLog> takeovers) {
-		this.takeovers = takeovers;
+	public void setCeoCount(int ceoCount) {
+		this.ceoCount = ceoCount;
+	}
+
+	public List<MissionInProgress> getMissions() {
+		return missions;
+	}
+
+	public void setMissions(List<MissionInProgress> missions) {
+		this.missions = missions;
 	}
 
 	public Research researchOfType(String type) {
@@ -132,6 +144,13 @@ public class Player {
 		return null;
 	}
 
+	public MissionInProgress missionOfType(MissionType type) {
+		Optional<MissionInProgress> promise = this.missions.stream().filter(m -> m.getType().equals(type)).findFirst();
+		if(promise.isPresent()) {
+			return promise.get();
+		}
+		return null;
+	}
 	public int currentNoOfResearchInTraining() {
 		int no = 0;
 		for (Research research : this.researches) {
@@ -141,9 +160,9 @@ public class Player {
 	}
 
 	public AttackLog getRecentAttackForIp(String targetIp) {
-		for (AttackLog attackLog : this.stealMoneyAttackCooldown) {
+		for (AttackLog attackLog : this.getLogs().getStealMoneyAttackCooldown()) {
 			Date cutOff = new Date(new Date().getTime() - (60 * 60 * 1000));
-			if(attackLog.getTargetIp().equals(targetIp) && attackLog.getTime().compareTo(cutOff) > 0 ) {
+			if (attackLog.getTargetIp().equals(targetIp) && attackLog.getTime().compareTo(cutOff) > 0) {
 				return attackLog;
 			}
 		}

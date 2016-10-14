@@ -299,7 +299,7 @@ H.map = (function() {
 					console.log(INTERSECTED);
 					console.log(INTERSECTED.data.ip);
 					
-					var secondsTotal = INTERSECTED.data.distance*60*60;
+					var secondsTotal = INTERSECTED.data.distance*60*30;
 					var hoursDisplay = Math.trunc(secondsTotal / 60 / 60);
 					var minutesDisplay = Math.trunc((secondsTotal - (hoursDisplay * 60 * 60)) / 60);
 					var secondsDisplay = Math.trunc(secondsTotal - (hoursDisplay * 60 * 60) - (minutesDisplay * 60));
@@ -352,13 +352,16 @@ H.map = (function() {
 			var url = $(this).attr("data-takeover-baseurl") + "?";
 			var params = [];
 			var troops = []; 
-			$(".overlay input").each(function() {
+			$(".overlay input.troop").each(function() {
 				var type = $(this).attr("id");
 				var val = $(this).val();
 				var troop = type + "___" + val;
 				troops.push(troop);
 			})
+			var ceo = $(".overlay input#ceo").val();
+			console.log("CEO - " + ceo);
 			params.push("troops="+troops.join("-_-"));
+			params.push("ceo="+ceo);
 			params.push("sourceIp="+$(this).attr("data-takeover-sourceip"));
 			params.push("targetIp="+$(this).attr("data-takeover-targetip"));
 			url += params.join("&");
@@ -369,27 +372,36 @@ H.map = (function() {
 				if (data.result == "ERROR") {
 					alertClass = "danger";
 					alertTitle = "Oh no!";
-				}
-				if (data.result == "WARNING") {
+					var html = "<div class=\"alert alert-" + alertClass
+					+ "\"><strong>" + alertTitle + "</strong> "
+					+ data.message + "</div>";
+					$(".result").html(html);
+				} else if (data.result == "WARNING") {
 					alertClass = "warning";
 					alertTitle = "Err!";
+					var html = "<div class=\"alert alert-" + alertClass
+					+ "\"><strong>" + alertTitle + "</strong> "
+					+ data.message + "</div>";
+					$(".result").html(html);
+				} else {
+					var html = "<div class=\"alert alert-" + alertClass
+					+ "\"><strong>" + alertTitle + "</strong> "
+					+ data.message + "</div>";
+					$(".result").html(html);
+					for ( var i in troops) {
+						var troopSplit = troops[i].split("___");
+						var type = troopSplit[0];
+						var val = troopSplit[1];
+						var existingVal = $("#"+type).attr('max');
+						var newVal = existingVal - val;
+		
+						$("#"+type).val(newVal);
+						$("#"+type).attr('max',newVal);
+						updateTakeoverUrl(type,newVal);
+						console.log(type + " - " + val + " - " + existingVal + " - " + newVal);
+					}
 				}
-				var html = "<div class=\"alert alert-" + alertClass
-						+ "\"><strong>" + alertTitle + "</strong> "
-						+ data.message + "</div>";
-				$(".result").html(html);
-				for ( var i in troops) {
-					var troopSplit = troops[i].split("___");
-					var type = troopSplit[0];
-					var val = troopSplit[1];
-					var existingVal = $("#"+type).attr('max');
-					var newVal = existingVal - val;
-
-					$("#"+type).val(newVal);
-					$("#"+type).attr('max',newVal);
-					updateTakeoverUrl(type,newVal);
-					console.log(type + " - " + val + " - " + existingVal + " - " + newVal);
-				}
+				
 			});
 		});
 	}

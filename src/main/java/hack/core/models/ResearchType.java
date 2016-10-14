@@ -2,23 +2,9 @@ package hack.core.models;
 
 public enum ResearchType {
 	
-	// private int upgradeSpeed; // Upgrade Speed
-	// private int upgradeParallel; // Upgrade Parallel
-	//
-	// private int defenceBase; // Defence Base (HP)
-	// private int defenceHardenFirewall; // Defence harden Firewall
-	// private int defenceHardenPhysical; // Defence harden Physical
-	// private int defenceHardenData; // Defence harden Data
-	//
-	// private int attackBonusFirewall; // Attack bonus Firewall
-	// private int attackBonusPhysical; // Attack bonus Physical
-	// private int attackBonusData; // Attack bonus Data
-	//
-	// private int moneyReserved; // Money Reserved
+	UPGRADE_SPEED, UPGRADE_PARALLEL, MONEY_RESERVED, MONEY_PASSIVE, //LIMIT LEVELS
 	
-	UPGRADE_SPEED, UPGRADE_PARALLEL, MONEY_RESERVED, //LIMIT LEVELS
-	
-	RECRUITMENT_SPEED, RECRUITMENT_PARALLEL, RECRUITMENT_COST, //LIMIT LEVELS
+	RECRUITMENT_SPEED, RECRUITMENT_PARALLEL, RECRUITMENT_COST, MISSIONS_LEVEL, //LIMIT LEVELS
 	
 	DEFENCE_BASE, DEFENSE_HARDEN_FIREWALL, DEFENSE_HARDEN_PHYSICAL, DEFENSE_HARDEN_DATA,
 	

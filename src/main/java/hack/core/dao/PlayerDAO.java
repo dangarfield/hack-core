@@ -11,6 +11,8 @@ import org.jongo.Aggregate.ResultsIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.WriteResult;
+
 @Service
 public class PlayerDAO {
 
@@ -58,4 +60,17 @@ public class PlayerDAO {
 
 		return entries;
 	}
+
+	public void incrementMoneyByPassiveMoneyLevel(int level, long amount) {
+//		db.players.update(
+//			{"researches": {$elemMatch: {"type":"MONEY_PASSIVE", "level":1}} },
+//			{$inc:{money: 10000}},
+//			{multi:true}
+//		);
+		
+		WriteResult result = players.update("{\"isNpc\":false,\"researches\": {$elemMatch: {\"type\":\"MONEY_PASSIVE\", \"level\":#}} }",level).multi().with("{$inc:{money: #}}",amount);
+		System.out.println("Passive Money Level "+ level + " (£" + amount + ") - Updated " + result.getN() + " players");
+	}
+
+	
 }

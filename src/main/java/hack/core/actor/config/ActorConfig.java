@@ -1,6 +1,8 @@
 package hack.core.actor.config;
 
 import hack.core.actor.AttackActor;
+import hack.core.actor.MissionActor;
+import hack.core.actor.PassiveMoneyActor;
 import hack.core.actor.ResearchTrainingActor;
 import hack.core.actor.RecruitmentActor;
 
@@ -20,6 +22,8 @@ public class ActorConfig {
 	public static final String RESEARCH_TRAINING_ACTOR = "research-training-actor";
 	public static final String ATTACK_ACTOR = "attack-actor";
 	public static final String RECRUITMENT_ACTOR = "recuirtment-actor";
+	public static final String PASSIVE_MONEY_ACTOR = "passive-money-actor";
+	public static final String MISSION_ACTOR = "mission-actor";
 
 	private ActorSystem actorSystem;
 
@@ -49,5 +53,17 @@ public class ActorConfig {
 	public ActorRef recruitmentActor() {
 		return actorSystem.actorOf(//
 				new DependencyInjectionProps(applicationContext, RecruitmentActor.class), RECRUITMENT_ACTOR);
+	}
+	@Bean(name = PASSIVE_MONEY_ACTOR)
+	@DependsOn({ ACTOR_SYSTEM })
+	public ActorRef passiveMoneyActor() {
+		return actorSystem.actorOf(//
+				new DependencyInjectionProps(applicationContext, PassiveMoneyActor.class), PASSIVE_MONEY_ACTOR);
+	}
+	@Bean(name = MISSION_ACTOR)
+	@DependsOn({ ACTOR_SYSTEM })
+	public ActorRef missionActor() {
+		return actorSystem.actorOf(//
+				new DependencyInjectionProps(applicationContext, MissionActor.class), MISSION_ACTOR);
 	}
 }

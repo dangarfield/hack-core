@@ -33,12 +33,19 @@
 						</ul>
 					</#list>
 				</ul>
-				<li><strong>Steal Cooldown</strong> (${player.stealMoneyAttackCooldown?size})</li>
+				<li><strong>Steal Cooldown</strong> (${player.logs.stealMoneyAttackCooldown?size})</li>
 				<ul>
-					<#list player.stealMoneyAttackCooldown as targetLocation>
-						<li><strong>Target:</strong> ${targetLocation.targetIp} - Cooldown time: ${(targetLocation.time?long - .now?long)?number_to_date?string('HH:mm:ss')}</li>
+					<#list player.logs.stealMoneyAttackCooldown as targetLocation>
+						<li><strong>Target:</strong> ${targetLocation.targetIp} - Cooldown time: ${(targetLocation.time?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
 					</#list>
 				</ul>
+				<li><strong>Takeover Results</strong> (${player.logs.takeoverLogs?size})</li>
+				<ul>
+					<#list player.logs.takeoverLogs as takeover>
+						<li><strong>Battle Report:</strong> ${takeover}</li>
+					</#list>
+				</ul>
+				<li><strong>CEOs</strong> (${player.ceoCount})</li>
 				<li><strong>Locations</strong> (${player.locationIps?size})</li>
 				<ul>
 					<#list player.locationIps as ip>
@@ -53,16 +60,47 @@
 						<#list location.defense as troop>
 							<li><strong>Defense:</strong> ${troop.type} - ${troop.noOfTroops}</li>
 						</#list>
-						<#list location.attackOut as troop>
-							<li><strong>Attack Out:</strong> ${troop.type} - ${troop.noOfTroops}</li>
+						<#list location.defenseIn as troop>
+							<li><strong>Defense In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target}</li>
 						</#list>
-						<#list location.attackIn as troop>
-							<li><strong>Attack In:</strong> ${troop.type} - ${troop.noOfTroops}</li>
+						<#list location.defenseOut as troop>
+							<li><strong>Defense Out:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target}</li>
+						</#list>
+						<#list location.defenseTransitIn as troop>
+							<li><strong>Defense Transit In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
+						</#list>
+						<#list location.defenseTransitOut as troop>
+							<li><strong>Defense Transit Out:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
+						</#list>
+						<#list location.attackTransitIn as troop>
+							<li><strong>Attack Transit In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
+						</#list>
+						<#list location.attackTransitOut as troop>
+							<li><strong>Attack Transit Out:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
+						</#list>
+						<#list location.returning as troop>
+							<li><strong>Returning:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
 						</#list>
 						<#list location.recruiting as troop>
 							<li><strong>Recruiting:</strong> ${troop.type} - ${troop.noOfTroops} (every ${troop.recruitmentTime} seconds)</li>
 						</#list>
 						</ul>
+					</#list>
+				</ul>
+				<li><strong>Missions</strong> (Level ${player.researchOfType('MISSIONS_LEVEL').level})</li>
+				<ul>
+					<#list missionTypes as missionType>
+						<li><strong>Mission:</strong> ${missionType} - ${missionType?index+1}
+						<#if missionType?index+1 <= player.researchOfType('MISSIONS_LEVEL').level>
+							
+							<#if player.missionOfType(missionType)??>
+								<button type="button" class="btn btn-primary btn-sm" data-action="/api/mission.start?type=${missionType}" disabled="disabled">Currently Learning</button>
+								Complete in ${(player.missionOfType(missionType).endTime?long - now?long)?number_to_date?string('HH:mm:ss')}
+							<#else>
+								<button type="button" class="btn btn-primary btn-sm" data-action="/api/mission.start?type=${missionType}">Start Mission</button>
+							</#if>
+						</#if>
+  						</li>
 					</#list>
 				</ul>
 			</ul>
@@ -91,6 +129,8 @@
 				</div>
 				<button type="submit" class="btn btn-primary">Recruit</button>
 			</form>
+			
+			
 		</div>
 	</div>
 	<!-- /.container -->

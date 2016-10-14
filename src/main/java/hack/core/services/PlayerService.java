@@ -79,13 +79,13 @@ public class PlayerService {
 		player.setEmail(email);
 		player.setPassword(password);
 		player.setNpc(npc);
-
 		player.setResearches(createDefaultResearch());
 
 		Location location = locationService.createAndSaveLocation(player.getId(), coord, npc);
 		player.getLocationIps().add(location.getIp());
 
-		player.setMoney(1000000);
+		player.setMoney(10000);
+		player.setCeoCount(0);
 		playerDAO.save(player);
 		return player;
 	}
@@ -121,5 +121,9 @@ public class PlayerService {
 
 	public Player getPlayerById(ObjectId playerId) {
 		return playerDAO.getUserById(playerId);
+	}
+
+	public Player getUserByEmail(String email) {
+		return playerDAO.getUserByEmail(email);
 	}
 }

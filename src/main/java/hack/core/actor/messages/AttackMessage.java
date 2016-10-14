@@ -10,16 +10,18 @@ public class AttackMessage {
 	private ObjectId sourcePlayerId;
 	private ObjectId targetPlayerId;
 	private List<TransitTroop> attackingTroops;
+	private int ceo;
 
 	public AttackMessage() {
 		super();
 	}
 
-	public AttackMessage(ObjectId sourcePlayerId, ObjectId targetPlayerId, List<TransitTroop> attackingTroops) {
+	public AttackMessage(ObjectId sourcePlayerId, ObjectId targetPlayerId, List<TransitTroop> attackingTroops, int ceo) {
 		super();
 		this.sourcePlayerId = sourcePlayerId;
 		this.targetPlayerId = targetPlayerId;
 		this.attackingTroops = attackingTroops;
+		this.ceo = ceo;
 	}
 
 	public ObjectId getSourcePlayerId() {
@@ -44,6 +46,14 @@ public class AttackMessage {
 
 	public void setAttackingTroops(List<TransitTroop> attackingTroops) {
 		this.attackingTroops = attackingTroops;
+	}
+
+	public int getCeo() {
+		return ceo;
+	}
+
+	public void setCeo(int ceo) {
+		this.ceo = ceo;
 	}
 
 }

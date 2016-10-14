@@ -2,12 +2,14 @@ package hack.web.controllers;
 
 import hack.core.dto.LocationStealMoneyDTO;
 import hack.core.models.Location;
+import hack.core.models.MissionType;
 import hack.core.models.Player;
 import hack.core.models.TroopType;
 import hack.core.services.LocationService;
 import hack.core.services.PlayerService;
 
 import java.security.Principal;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +36,9 @@ public class AppController {
 		model.addAttribute("player", player);
 		model.addAttribute("locations", locations);
 		model.addAttribute("troopTypes", TroopType.values());
+		model.addAttribute("missionTypes", MissionType.values());
 		model.addAttribute("pageTitle", "App");
-
+		model.addAttribute("now",new Date());
 		return "app";
 	}
 

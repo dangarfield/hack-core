@@ -80,11 +80,14 @@
 		<#list location.defense as troop>
 		    <p>
 		    	<label for="${troop.type}">${troop.type}</label>
-		    	<input type="range" min="0" max="${troop.noOfTroops}" value="${troop.noOfTroops}" id="${troop.type}" oninput="H.map.updateTakeoverUrl('${troop.type}',value)">
+		    	<input class="troop" type="range" min="0" max="${troop.noOfTroops}" value="${troop.noOfTroops}" id="${troop.type}" oninput="H.map.updateTakeoverUrl('${troop.type}',value)">
 		    	<output for="${troop.type}" id="${troop.type}output">${troop.noOfTroops}</output>
 		    </p>
 		</#list>
-		
+		<label for="ceo">CEO</label>
+		<input type="range" min="0" max="${player.ceoCount}" value="${player.ceoCount}" id="ceo" oninput="H.map.updateTakeoverUrl('ceo',value)">
+		<output for="ceo" id="ceooutput">${player.ceoCount}</output>
+		<br/>
 		<button data-hide=".overlay">Close</button>
 		<button class="takeover-action" data-hide=".overlays" data-takeover-baseUrl="/api/attack.takeover" data-takeover-sourceIp="${locations?first.ip}" data-takeover-targetIp="">Launch Take Over Attack</button>
 	</div>

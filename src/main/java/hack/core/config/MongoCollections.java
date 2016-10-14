@@ -33,5 +33,10 @@ public class MongoCollections {
 		LOG.info("Bean created: config");
 		return jongo.getCollection("config");
 	}
+	@Bean
+	public MongoCollection battleReports() {
+		LOG.info("Bean created: config");
+		return jongo.getCollection("battleReports");
+	}
 
 }

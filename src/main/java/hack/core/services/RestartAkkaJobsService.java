@@ -11,6 +11,7 @@ import hack.core.actor.messages.ResearchMessage;
 import hack.core.dao.LocationDAO;
 import hack.core.dao.PlayerDAO;
 import hack.core.dao.ResearchEntry;
+import hack.core.dao.TakeoverTroopsEntry;
 import hack.core.models.TrainingResearch;
 import hack.core.models.TransitTroop;
 
@@ -63,14 +64,14 @@ public class RestartAkkaJobsService {
 	
 	private void restartTakeovers() {
 		System.out.println("restartTakeovers Started");
-		List<List<TransitTroop>> listOfListOfTransits = locationDAO.getTransitTroopsForRestart();
+		List<TakeoverTroopsEntry> entries = locationDAO.getTransitTroopsForRestart();
 		
-		for (List<TransitTroop> attackingTroops : listOfListOfTransits) {
-			TransitTroop troop = attackingTroops.get(0);
+		for (TakeoverTroopsEntry entry : entries) {
+			TransitTroop troop = entry.getTroops().get(0);
 			
 			ObjectId sourcePlayerId = playerDAO.getPlayerByLocationIP(troop.getSource()).getId();
 			ObjectId targetPlayerId = playerDAO.getPlayerByLocationIP(troop.getTarget()).getId();
-			AttackMessage attackMessage = new AttackMessage(sourcePlayerId, targetPlayerId, attackingTroops);
+			AttackMessage attackMessage = new AttackMessage(sourcePlayerId, targetPlayerId, entry.getTroops(), entry.getCeo());
 			long secondsToAttack = (troop.getArrival().getTime() - new Date().getTime()) / 1000;
 			if(secondsToAttack < 0) {
 				secondsToAttack = 0;
