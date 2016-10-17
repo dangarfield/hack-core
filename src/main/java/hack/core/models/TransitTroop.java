@@ -12,8 +12,8 @@ public class TransitTroop extends Troop {
 		super();
 	}
 
-	public TransitTroop(TroopType type, long noOfTroopsDate, String source, String target, Date arrival) {
-		super(type, noOfTroopsDate);
+	public TransitTroop(TroopType type, long noOfTroops, String source, String target, Date arrival) {
+		super(type, noOfTroops);
 		this.source = source;
 		this.target = target;
 		this.arrival = arrival;

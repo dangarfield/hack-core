@@ -220,8 +220,6 @@ public class AttackService {
 		List<TransitTroop> defendingInKilled = new ArrayList<TransitTroop>();
 		List<TransitTroop> defendingInRemaining = new ArrayList<TransitTroop>();
 
-		double dBase = targetPlayer.researchOfType(ResearchType.DEFENCE_BASE).getLevel() * 1.1;
-
 		int attackVictory = 0;
 		int defenseVictory = 0;
 
@@ -234,14 +232,9 @@ public class AttackService {
 			Troop defendingTroop = getTroopsOfType(type, defendingTroops);
 			List<TransitTroop> defendingInTroopsOfType = getTransitTroopsOfType(type, defendingInTroops);
 
-			double aBonus = sourcePlayer.researchOfType(ResearchType.valueOf("ATTACK_BONUS_" + type.toString())).getLevel() * 1.1;
-			double aScore = attackingTroop.getNoOfTroops() * aBonus * randomAdjustment();
-
-			double dBonus = targetPlayer.researchOfType(ResearchType.valueOf("DEFENSE_HARDEN_" + type.toString())).getLevel() * 1.1;
-			double dScoreTroopCountOwn = defendingTroop.getNoOfTroops();
-			double dScoreTroopCountIn = defendingInTroopsOfType.stream().mapToDouble(t -> t.getNoOfTroops()).sum();
-			double dScore = ((dScoreTroopCountOwn + dScoreTroopCountIn * dBonus) + (dBase * 5)) * randomAdjustment();
-
+			double aScore = calculateAttackScore(sourcePlayer, type, attackingTroop);
+			double dScore = calculateDefenseScore(targetPlayer, type, defendingTroop, defendingInTroopsOfType);
+			
 			System.out.println("Attack on " + target.getIp() + " - " + type + " - attack: " + aScore + " defense: " + dScore);
 			if (aScore > dScore) {
 				factor = Math.abs(aScore - dScore) / Math.abs(aScore);
@@ -255,11 +248,7 @@ public class AttackService {
 				defendingKilled.add(new Troop(type, defendingTroop.getNoOfTroops()));
 
 				for (TransitTroop defendingInTroop : defendingInTroopsOfType) {
-					// defendingInRemaining.add(new
-					// TransitTroop(defendingInTroop.getType(), 0,
-					// defendingInTroop.getSource(),
-					// defendingInTroop.getTarget(),
-					// defendingInTroop.getArrival()));
+					// defendingInRemaining is not here because they are all dead
 					defendingInKilled.add(new TransitTroop(defendingInTroop.getType(), defendingInTroop.getNoOfTroops(),
 							defendingInTroop.getSource(), defendingInTroop.getTarget(), defendingInTroop.getArrival()));
 				}
@@ -377,7 +366,23 @@ public class AttackService {
 		System.out.println("Attack complete");
 
 	}
-
+	
+	public double calculateAttackScore(Player sourcePlayer, TroopType type, TransitTroop attackingTroop) {
+		double aBonus = sourcePlayer.researchOfType(ResearchType.valueOf("ATTACK_BONUS_" + type.toString())).getLevel() * 1.1;
+		double aScore = attackingTroop.getNoOfTroops() * aBonus * randomAdjustment();
+		return aScore;
+	}
+	public double calculateDefenseScore(Player targetPlayer, TroopType type, Troop defendingTroop, List<TransitTroop> defendingInTroopsOfType) {
+		
+		double dBase = targetPlayer.researchOfType(ResearchType.DEFENCE_BASE).getLevel() * 1.1;
+		
+		double dBonus = targetPlayer.researchOfType(ResearchType.valueOf("DEFENSE_HARDEN_" + type.toString())).getLevel() * 1.1;
+		double dScoreTroopCountOwn = defendingTroop.getNoOfTroops();
+		double dScoreTroopCountIn = defendingInTroopsOfType.stream().mapToDouble(t -> t.getNoOfTroops()).sum();
+		double dScore = ((dScoreTroopCountOwn + dScoreTroopCountIn * dBonus) + (dBase * 5)) * randomAdjustment();
+		return dScore;
+	}
+	
 	private int getCEOsRequiredForTakeover(Player sourcePlayer) {
 		return sourcePlayer.getLocationIps().size() + 1;
 	}
