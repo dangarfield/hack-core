@@ -1,17 +1,12 @@
 package hack.core.services;
 
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import scala.concurrent.util.Duration;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import hack.core.actor.config.ActorConfig;
 import hack.core.actor.messages.ResearchMessage;
 import hack.core.dto.APIResultDTO;
@@ -30,12 +25,8 @@ public class ResearchService {
 	private PlayerService playerService;
 	@Autowired
 	private LocationService locationService;
-
 	@Autowired
-	@Qualifier(ActorConfig.RESEARCH_TRAINING_ACTOR)
-	private ActorRef researchTrainingActor;
-	@Autowired
-	private ActorSystem actorSystem;
+	private SchedulingService schedulingService;
 
 	public APIResultDTO triggerUpgrade(Player player, ResearchType researchType) {
 
@@ -80,7 +71,7 @@ public class ResearchService {
 
 		// Trigger research actor
 		ResearchMessage researchMessage = new ResearchMessage(player.getEmail(), researchType, trainingResearch.getId());
-		actorSystem.scheduler().scheduleOnce(Duration.create(trainingTime, TimeUnit.SECONDS), researchTrainingActor, researchMessage);
+		schedulingService.scheduleJobOnce(ActorConfig.RESEARCH_TRAINING_ACTOR, researchMessage, trainingTime);
 
 		return new APIResultDTO(APIResultType.SUCCESS, "Research training to level " + (desiredLevelMinusOne + 1));
 	}

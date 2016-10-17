@@ -61,10 +61,10 @@
 							<li><strong>Defense:</strong> ${troop.type} - ${troop.noOfTroops}</li>
 						</#list>
 						<#list location.defenseIn as troop>
-							<li><strong>Defense In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target}</li>
+							<li><strong>Defense In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} <button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.defense-recall?sourceIp=${troop.source}&targetIp=${troop.target}&types=${troop.type}">Recall this</button> <button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.defense-recall?sourceIp=${troop.source}&targetIp=${troop.target}&types=FIREWALL&types=PHYSICAL&types=DATA">Recall all from ${troop.source}</button></li>
 						</#list>
 						<#list location.defenseOut as troop>
-							<li><strong>Defense Out:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target}</li>
+							<li><strong>Defense Out:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} <button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.defense-recall?sourceIp=${troop.source}&targetIp=${troop.target}&types=${troop.type}">Recall this</button> <button type="button" class="btn btn-primary btn-sm" data-action="/api/attack.defense-recall?sourceIp=${troop.source}&targetIp=${troop.target}&types=FIREWALL&types=PHYSICAL&types=DATA">Recall all at ${troop.target}</button></li>
 						</#list>
 						<#list location.defenseTransitIn as troop>
 							<li><strong>Defense Transit In:</strong> ${troop.type} - ${troop.noOfTroops} from ${troop.source} to ${troop.target} in ${(troop.arrival?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
@@ -101,6 +101,12 @@
 							</#if>
 						</#if>
   						</li>
+					</#list>
+				</ul>
+				<li><strong>Mission Logs</strong> (${player.logs.missionLogs?size})</li>
+				<ul>
+					<#list player.logs.missionLogs as log>
+						<li><strong>${log.type}:</strong> ${log.message} - ${log.time?datetime}</li>
 					</#list>
 				</ul>
 			</ul>

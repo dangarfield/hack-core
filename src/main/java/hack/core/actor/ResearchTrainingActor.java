@@ -14,8 +14,6 @@ public class ResearchTrainingActor extends UntypedActor {
 
 	@Override
 	public void onReceive(Object o) throws Exception {
-		//TODO - Need to look at persistence and retrigger research events
-		
 		if (o instanceof ResearchMessage) {
 			ResearchMessage researchMessage = (ResearchMessage) o;
 			researchService.completeTraining(researchMessage);

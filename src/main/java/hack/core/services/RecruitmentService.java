@@ -1,14 +1,8 @@
 package hack.core.services;
 
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import scala.concurrent.util.Duration;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import hack.core.actor.config.ActorConfig;
 import hack.core.actor.messages.RecruitmentMessage;
 import hack.core.dao.LocationDAO;
@@ -33,12 +27,8 @@ public class RecruitmentService {
 	private PlayerDAO playerDAO;
 	@Autowired
 	private LocationService locationService;
-
 	@Autowired
-	@Qualifier(ActorConfig.RECRUITMENT_ACTOR)
-	private ActorRef recruitmentActor;
-	@Autowired
-	private ActorSystem actorSystem;
+	private SchedulingService schedulingService;
 
 	public APIResultDTO recruit(Player player, String ip, TroopType type, long desiredNoOfTroops) {
 
@@ -90,7 +80,7 @@ public class RecruitmentService {
 		RecruitmentMessage recruitmentMessage = new RecruitmentMessage(ip, type, timePerTroop);
 		
 		//Set scheduler
-		actorSystem.scheduler().scheduleOnce(Duration.create(timePerTroop, TimeUnit.SECONDS), recruitmentActor, recruitmentMessage);
+		schedulingService.scheduleJobOnce(ActorConfig.RECRUITMENT_ACTOR, recruitmentMessage, timePerTroop);
 		return new APIResultDTO(APIResultType.SUCCESS, message);
 	}
 	
@@ -141,7 +131,7 @@ public class RecruitmentService {
 			if(troop.getType().equals(recruitmentMessage.getType())) {
 				troop.setNoOfTroops(troop.getNoOfTroops() - 1);
 				if(troop.getNoOfTroops() > 0) {
-					actorSystem.scheduler().scheduleOnce(Duration.create(recruitmentMessage.getRecruitmentTime(), TimeUnit.SECONDS), recruitmentActor, recruitmentMessage);
+					schedulingService.scheduleJobOnce(ActorConfig.RECRUITMENT_ACTOR, recruitmentMessage, recruitmentMessage.getRecruitmentTime());
 					System.out.println("Recruit more");
 				} else {
 					System.out.println("Recruiting finished");

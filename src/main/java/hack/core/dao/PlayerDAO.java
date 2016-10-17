@@ -72,5 +72,22 @@ public class PlayerDAO {
 		System.out.println("Passive Money Level "+ level + " (£" + amount + ") - Updated " + result.getN() + " players");
 	}
 
+	public List<MissionEntry> getMissionsForRestart() {
+		List<MissionEntry> entries = new ArrayList<MissionEntry>();
+
+		ResultsIterator<MissionEntry> agg = players
+				.aggregate("{$match : {\"missions.type\": {$exists:true} } }")
+				.and("{$unwind : \"$missions\" }")
+				.and("{$match : {\"missions.type\": {$exists:true} } }")
+				.and("{$project : {_id:0,\"playerId\":\"$_id\",\"type\":\"$missions.type\",\"completionTime\":\"$missions.endTime\"}}")
+				.as(MissionEntry.class);
+
+		for (MissionEntry entry : agg) {
+			entries.add(entry);
+		}
+
+		return entries;
+	}
+
 	
 }

@@ -1,21 +1,19 @@
-package hack.core.actor.messages;
+package hack.core.dao;
+
+import java.util.Date;
 
 import org.bson.types.ObjectId;
 
 import hack.core.models.MissionType;
 
-public class MissionMessage extends AbstractMessage {
+public class MissionEntry {
+
 	private ObjectId playerId;
 	private MissionType type;
+	private Date completionTime;
 
-	public MissionMessage() {
+	public MissionEntry() {
 		super();
-	}
-
-	public MissionMessage(ObjectId playerId, MissionType type) {
-		super();
-		this.playerId = playerId;
-		this.type = type;
 	}
 
 	public ObjectId getPlayerId() {
@@ -32,6 +30,14 @@ public class MissionMessage extends AbstractMessage {
 
 	public void setType(MissionType type) {
 		this.type = type;
+	}
+
+	public Date getCompletionTime() {
+		return completionTime;
+	}
+
+	public void setCompletionTime(Date completionTime) {
+		this.completionTime = completionTime;
 	}
 
 }

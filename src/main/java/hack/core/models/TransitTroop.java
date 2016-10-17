@@ -48,11 +48,21 @@ public class TransitTroop extends Troop {
 		if (obj instanceof TransitTroop) {
 			TransitTroop o = (TransitTroop) obj;
 			if (o.getType().equals(this.getType()) && o.getNoOfTroops() == this.getNoOfTroops() && o.getSource().equals(this.getSource())
-					&& o.getTarget().equals(this.getTarget()) && o.getArrival().equals(this.getArrival())) {
+					&& o.getTarget().equals(this.getTarget()) && dateEquality(o.getArrival(), this.getArrival())) {
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	private boolean dateEquality(Date date, Date date2) {
+		if(date == null && date2 == null) {
+			return true;
+		} else if(date.equals(date2)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

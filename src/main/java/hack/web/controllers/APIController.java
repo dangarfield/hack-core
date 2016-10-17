@@ -79,6 +79,25 @@ public class APIController {
 		
 	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}
+	@PostMapping("/api/attack.defense")
+	public ResponseEntity<APIResultDTO> transit(@RequestParam(value = "sourceIp") String sourceIp, @RequestParam(value = "targetIp") String targetIp, @RequestParam(value = "troops") String troopString) {
+		
+		List<Troop> desiredTroops = decodeTroops(troopString);
+		Player player = playerService.getCurrentPlayer();
+		
+		APIResultDTO result = attackService.sendDefense(player, sourceIp, targetIp, desiredTroops);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/attack.defense-recall")
+	public ResponseEntity<APIResultDTO> recallDefense(@RequestParam(value = "sourceIp") String sourceIp, @RequestParam(value = "targetIp") String targetIp, @RequestParam(value = "types") List<TroopType> types) {
+		
+		Player player = playerService.getCurrentPlayer();
+		
+		APIResultDTO result = attackService.triggerReturnDefenseTroops(player, sourceIp, targetIp, types);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
 
 	
 

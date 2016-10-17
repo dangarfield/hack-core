@@ -6,7 +6,7 @@ import org.bson.types.ObjectId;
 
 import hack.core.models.TransitTroop;
 
-public class AttackMessage {
+public class AttackMessage extends AbstractMessage {
 	private ObjectId sourcePlayerId;
 	private ObjectId targetPlayerId;
 	private List<TransitTroop> attackingTroops;

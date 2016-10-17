@@ -29,7 +29,8 @@ public class LocationDAO {
 	}
 
 	public List<Location> getLocationsForEmail(Player player) {
-		MongoCursor<Location> locationCursor = locations.find("{player:#}", player.getId()).as(Location.class);
+		MongoCursor<Location> locationCursor = locations.find("{player:#}",
+				player.getId()).as(Location.class);
 		List<Location> locations = new ArrayList<Location>();
 		for (Location location : locationCursor) {
 			locations.add(location);
@@ -38,8 +39,10 @@ public class LocationDAO {
 	}
 
 	public List<Location> getRandomLocations(Player player, int no) {
-		ResultsIterator<Location> locationCursor = locations.aggregate("{$match:{player:{$ne:#},npc:false}}", player.getId())
-				.and("{$sample:{size:#}}", no).as(Location.class);
+		ResultsIterator<Location> locationCursor = locations
+				.aggregate("{$match:{player:{$ne:#},npc:false}}",
+						player.getId()).and("{$sample:{size:#}}", no)
+				.as(Location.class);
 		List<Location> locations = new ArrayList<Location>();
 		for (Location location : locationCursor) {
 			locations.add(location);
@@ -51,8 +54,10 @@ public class LocationDAO {
 		locations.remove();
 	}
 
-	public void incrementAllOfAPlayersLocationsResearchHideLevel(Player player, int noOfLevels) {
-		locations.update("{player:#}", player.getId()).multi().with("{$inc:{researchHideLevel:#}}", noOfLevels);
+	public void incrementAllOfAPlayersLocationsResearchHideLevel(Player player,
+			int noOfLevels) {
+		locations.update("{player:#}", player.getId()).multi()
+				.with("{$inc:{researchHideLevel:#}}", noOfLevels);
 	}
 
 	public Location getLocationFromIp(String ip) {
@@ -81,9 +86,11 @@ public class LocationDAO {
 		// ]
 		// }
 
-		MongoCursor<Location> res = locations.find(match.toString(), x, xMax, y, yMax).as(Location.class);
+		MongoCursor<Location> res = locations.find(match.toString(), x, xMax,
+				y, yMax).as(Location.class);
 		for (Location location : res) {
-			mapTile.add(new MapTileEntry(location.getIp(), location.getCoord(), location.getPlayer(), location.isNpc()));
+			mapTile.add(new MapTileEntry(location.getIp(), location.getCoord(),
+					location.getPlayer(), location.isNpc()));
 		}
 		return mapTile;
 	}
@@ -91,7 +98,8 @@ public class LocationDAO {
 	public List<RecruitmentMessage> getRecruitingForRestart() {
 		// TODO - Do this properly
 		List<RecruitmentMessage> messages = new ArrayList<RecruitmentMessage>();
-		ResultsIterator<RecruitmentMessage> agg = locations.aggregate("{$match : {\"recruiting\": {$not: {$size:0} } }}")
+		ResultsIterator<RecruitmentMessage> agg = locations
+				.aggregate("{$match : {\"recruiting\": {$not: {$size:0} } }}")
 				.and("{$unwind : \"$recruiting\" }")
 				.and("{$project: {_id:0,ip:\"$_id\",type:\"$recruiting.type\",recruitmentTime:\"$recruiting.recruitmentTime\"}}")
 				.as(RecruitmentMessage.class);
@@ -101,15 +109,31 @@ public class LocationDAO {
 		return messages;
 	}
 
-	public List<TakeoverTroopsEntry> getTransitTroopsForRestart() {
+	public List<TakeoverTroopsEntry> getTransitTroopsAttackForRestart() {
+		return getTransitTroopsForRestartByType("attackTransitOut");
+	}
+
+	public List<TakeoverTroopsEntry> getTransitTroopsDefenseForRestart() {
+		return getTransitTroopsForRestartByType("defenseTransitOut");
+	}
+
+	public List<TakeoverTroopsEntry> getTransitTroopsReturningForRestart() {
+		return getTransitTroopsForRestartByType("returning");
+	}
+
+	private List<TakeoverTroopsEntry> getTransitTroopsForRestartByType(
+			String type) {
 		List<TakeoverTroopsEntry> listOfLists = new ArrayList<TakeoverTroopsEntry>();
 
 		ResultsIterator<TakeoverTroopsEntry> agg = locations
-				.aggregate("{$match : {\"attackOut\": {$not: {$size:0} } }}")
-				.and("{$unwind : \"$attackOut\" }")
-				.and("{$group: {_id : {\"source\":\"$attackOut.source\", \"target\":\"$attackOut.target\", \"arrival\":\"$attackOut.arrival\"},troops : {$push:\"$attackOut\"}}}")
-				.and("{$project: {_id:0,troops:1,ceo:1}}").as(TakeoverTroopsEntry.class);
-
+				.aggregate("{$match : {\"" + type + "\": {$not: {$size:0} } }}")
+				.and("{$unwind : \"$" + type + "\" }")
+				.and("{$group: {_id : {\"source\":\"$" + type
+						+ ".source\", \"target\":\"$" + type
+						+ ".target\", \"arrival\":\"$" + type
+						+ ".arrival\"},troops : {$push:\"$" + type + "\"}}}")
+				.and("{$project: {_id:0,troops:1,ceo:1}}")
+				.as(TakeoverTroopsEntry.class);
 		for (TakeoverTroopsEntry entry : agg) {
 			listOfLists.add(entry);
 		}
@@ -117,12 +141,14 @@ public class LocationDAO {
 	}
 
 	public Location getRandomLocationForPlayer(Player player) {
-		ResultsIterator<Location> locationCursor = locations.aggregate("{$match:{player:#}}", player.getId()).and("{$sample:{size:#}}", 1)
-				.as(Location.class);
+		ResultsIterator<Location> locationCursor = locations
+				.aggregate("{$match:{player:#}}", player.getId())
+				.and("{$sample:{size:#}}", 1).as(Location.class);
 		if (locationCursor.hasNext()) {
 			return locationCursor.next();
 		} else {
 			return null;
 		}
 	}
+
 }

@@ -9,13 +9,13 @@ public class Logs {
 
 	private List<AttackLog> stealMoneyAttackCooldown;
 	private List<ObjectId> takeoverLogs;
-	private List<AttackLog> missionLogs;
+	private List<MissionLog> missionLogs;
 
 	public Logs() {
 		super();
 		this.stealMoneyAttackCooldown = new ArrayList<AttackLog>();
 		this.takeoverLogs = new ArrayList<ObjectId>();
-		this.missionLogs = new ArrayList<AttackLog>();
+		this.missionLogs = new ArrayList<MissionLog>();
 	}
 
 	public List<AttackLog> getStealMoneyAttackCooldown() {
@@ -34,11 +34,11 @@ public class Logs {
 		this.takeoverLogs = takeoverLogs;
 	}
 
-	public List<AttackLog> getMissionLogs() {
+	public List<MissionLog> getMissionLogs() {
 		return missionLogs;
 	}
 
-	public void setMissionLogs(List<AttackLog> missionLogs) {
+	public void setMissionLogs(List<MissionLog> missionLogs) {
 		this.missionLogs = missionLogs;
 	}
 

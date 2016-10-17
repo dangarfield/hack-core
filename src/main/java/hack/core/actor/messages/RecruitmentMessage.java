@@ -2,7 +2,7 @@ package hack.core.actor.messages;
 
 import hack.core.models.TroopType;
 
-public class RecruitmentMessage {
+public class RecruitmentMessage extends AbstractMessage {
 	private String ip;
 	private TroopType type;
 	private long recruitmentTime;

@@ -81,6 +81,7 @@ H.map = (function() {
 			console.log("Init map");
 			getDataAndLoadScene();
 			bindTakeOverAction();
+			bindDefenseAction();
 		}
 	};
 	
@@ -312,13 +313,16 @@ H.map = (function() {
 					html += "<p>"+INTERSECTED.data.ip+" - Takeover time: "+ hoursDisplay+":"+minutesDisplay+":"+secondsDisplay+"</p>";
 					html += "<button data-action=\"/api/attack.scan?ip="+INTERSECTED.data.ip+"\">Scan</button>";
 					html += "<button data-action=\"/api/attack.steal-money?ip="+INTERSECTED.data.ip+"\">Attack</button>";
+					html += "<button data-defense-popup=\""+INTERSECTED.data.ip+"\">Defend</button>";
 					html += "<button data-takeover-popup=\""+INTERSECTED.data.ip+"\">Takeover</button>";
 					html += "<p class=\"result\"></p>";
 					
 					$(".location-popup").html(html);
-					$(".overlay .heading").html("<p>"+INTERSECTED.data.ip+" - Takeover time: "+ hoursDisplay+":"+minutesDisplay+":"+secondsDisplay+"</p>");
+					$(".overlay .heading").html("<p>"+INTERSECTED.data.ip+" - Arrival time: "+ hoursDisplay+":"+minutesDisplay+":"+secondsDisplay+"</p>");
 					$(".overlay .takeover-action").attr("data-takeover-targetIp",INTERSECTED.data.ip);
+					$(".overlay .defense-action").attr("data-defense-targetIp",INTERSECTED.data.ip);
 					bindTakeOverPopup();
+					bindDefensePopup();
 //					$(".location-popup button").click(function() {
 //						console.log("CLICKED: " + $(this).attr("data"));
 //					});
@@ -342,7 +346,17 @@ H.map = (function() {
 			var ip = $(this).attr('data-takeover-popup');
 			console.log(currentLocation);
 			console.log(ip);
-			$(".overlay").show();
+			$(".overlay.takeover").show();
+			$(".overlay.defense").hide();
+		});
+	}
+	var bindDefensePopup = function() {
+		$("button[data-defense-popup]").click(function() {
+			var ip = $(this).attr('data-defense-popup');
+			console.log(currentLocation);
+			console.log(ip);
+			$(".overlay.defense").show();
+			$(".overlay.takeover").hide();
 		});
 	}
 	
@@ -352,13 +366,13 @@ H.map = (function() {
 			var url = $(this).attr("data-takeover-baseurl") + "?";
 			var params = [];
 			var troops = []; 
-			$(".overlay input.troop").each(function() {
-				var type = $(this).attr("id");
+			$(".overlay.takeover input.troop").each(function() {
+				var type = $(this).attr("data-type");
 				var val = $(this).val();
 				var troop = type + "___" + val;
 				troops.push(troop);
 			})
-			var ceo = $(".overlay input#ceo").val();
+			var ceo = $(".overlay.takeover input#ceotakeover").val();
 			console.log("CEO - " + ceo);
 			params.push("troops="+troops.join("-_-"));
 			params.push("ceo="+ceo);
@@ -366,45 +380,86 @@ H.map = (function() {
 			params.push("targetIp="+$(this).attr("data-takeover-targetip"));
 			url += params.join("&");
 			
-			$.post(url, function(data) {
-				var alertClass = "success";
-				var alertTitle = "Woohoo!";
-				if (data.result == "ERROR") {
-					alertClass = "danger";
-					alertTitle = "Oh no!";
-					var html = "<div class=\"alert alert-" + alertClass
-					+ "\"><strong>" + alertTitle + "</strong> "
-					+ data.message + "</div>";
-					$(".result").html(html);
-				} else if (data.result == "WARNING") {
-					alertClass = "warning";
-					alertTitle = "Err!";
-					var html = "<div class=\"alert alert-" + alertClass
-					+ "\"><strong>" + alertTitle + "</strong> "
-					+ data.message + "</div>";
-					$(".result").html(html);
-				} else {
-					var html = "<div class=\"alert alert-" + alertClass
-					+ "\"><strong>" + alertTitle + "</strong> "
-					+ data.message + "</div>";
-					$(".result").html(html);
-					for ( var i in troops) {
-						var troopSplit = troops[i].split("___");
-						var type = troopSplit[0];
-						var val = troopSplit[1];
-						var existingVal = $("#"+type).attr('max');
-						var newVal = existingVal - val;
-		
-						$("#"+type).val(newVal);
-						$("#"+type).attr('max',newVal);
-						updateTakeoverUrl(type,newVal);
-						console.log(type + " - " + val + " - " + existingVal + " - " + newVal);
-					}
-				}
-				
-			});
+			transitPostAction(url, troops, ceo);
 		});
 	}
+	var bindDefenseAction = function() {
+		$("button.defense-action").click(function() {
+			
+			var url = $(this).attr("data-defense-baseurl") + "?";
+			var params = [];
+			var troops = []; 
+			$(".overlay.takeover input.troop").each(function() {
+				var type = $(this).attr("data-type");
+				var val = $(this).val();
+				var troop = type + "___" + val;
+				troops.push(troop);
+			})
+			params.push("troops="+troops.join("-_-"));
+			params.push("sourceIp="+$(this).attr("data-defense-sourceip"));
+			params.push("targetIp="+$(this).attr("data-defense-targetip"));
+			url += params.join("&");
+			
+			console.log(url);
+			transitPostAction(url, troops, 0);
+		});
+	}
+	
+	var transitPostAction = function(url, troops, ceo) {
+		$.post(url, function(data) {
+			var alertClass = "success";
+			var alertTitle = "Woohoo!";
+			if (data.result == "ERROR") {
+				alertClass = "danger";
+				alertTitle = "Oh no!";
+				var html = "<div class=\"alert alert-" + alertClass
+				+ "\"><strong>" + alertTitle + "</strong> "
+				+ data.message + "</div>";
+				$(".result").html(html);
+			} else if (data.result == "WARNING") {
+				alertClass = "warning";
+				alertTitle = "Err!";
+				var html = "<div class=\"alert alert-" + alertClass
+				+ "\"><strong>" + alertTitle + "</strong> "
+				+ data.message + "</div>";
+				$(".result").html(html);
+			} else {
+				var html = "<div class=\"alert alert-" + alertClass
+				+ "\"><strong>" + alertTitle + "</strong> "
+				+ data.message + "</div>";
+				$(".result").html(html);
+				for ( var i in troops) {
+					var troopSplit = troops[i].split("___");
+					var type = troopSplit[0];
+					var val = troopSplit[1];
+					
+					
+					var existingVal = $("#"+type+"takeover").attr('max');
+					var newVal = existingVal - val;
+					$("#"+type+"takeover").val(newVal);
+					$("#"+type+"takeover").attr('max',newVal);
+					updateTroopSliderOutput(type+"takeover",newVal);
+										
+					var existingVal = $("#"+type+"defense").attr('max');
+					var newVal = existingVal - val;
+					$("#"+type+"defense").val(newVal);
+					$("#"+type+"defense").attr('max',newVal);
+					updateTroopSliderOutput(type+"defense",newVal);
+					console.log(type + " - " + val + " - " + existingVal + " - " + newVal);
+				}
+				
+				var existingVal = $(".overlay.takeover input#ceotakeover").attr('max');
+				var newVal = existingVal - ceo;
+				$("#ceotakeover").val(newVal);
+				$("#ceotakeover").attr('max',newVal);
+				updateTroopSliderOutput("ceotakeover",newVal);
+				//TODO - decrement CEO level
+			}
+			
+		});
+	};
+	
+	
 	var onWindowResize = function() {
 		camera.left = window.innerWidth / - 2;
 		camera.right = window.innerWidth / 2;
@@ -439,12 +494,12 @@ H.map = (function() {
 		currentLocation = H.data.currentLocation;
 	}
 	
-	var updateTakeoverUrl = function(type, val) {
+	var updateTroopSliderOutput = function(type, val) {
 		$('#'+type+"output").val(val);
 	}
 	return {
 		init : init,
-		updateTakeoverUrl : updateTakeoverUrl
+		updateTroopSliderOutput : updateTroopSliderOutput
 	};
 })();
 

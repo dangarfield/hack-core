@@ -1,9 +1,9 @@
 package hack.core.services;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import hack.core.actor.config.ActorConfig;
@@ -12,6 +12,7 @@ import hack.core.dto.APIResultDTO;
 import hack.core.dto.APIResultType;
 import hack.core.models.Location;
 import hack.core.models.MissionInProgress;
+import hack.core.models.MissionLog;
 import hack.core.models.MissionType;
 import hack.core.models.Player;
 import hack.core.models.Research;
@@ -20,12 +21,7 @@ import hack.core.models.Troop;
 import hack.core.models.TroopType;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import scala.concurrent.util.Duration;
 
 @Service
 public class MissionService {
@@ -36,13 +32,9 @@ public class MissionService {
 	private LocationService locationService;
 	@Autowired
 	private ResearchService researchService;
-	
 	@Autowired
-	@Qualifier(ActorConfig.MISSION_ACTOR)
-	private ActorRef missionActor;
-	@Autowired
-	private ActorSystem actorSystem;
-	
+	private SchedulingService schedulingService;
+
 	public APIResultDTO triggerMission(Player player, MissionType missionType) {
 
 		int playersMissionLevel = player.researchOfType(ResearchType.MISSIONS_LEVEL).getLevel();
@@ -83,7 +75,7 @@ public class MissionService {
 
 		// Trigger Mission Actor
 		MissionMessage missionMessage = new MissionMessage(player.getId(), missionType);
-		actorSystem.scheduler().scheduleOnce(Duration.create(timeInSeconds, TimeUnit.SECONDS), missionActor, missionMessage);
+		schedulingService.scheduleJobOnce(ActorConfig.MISSION_ACTOR, missionMessage, timeInSeconds);
 
 		return new APIResultDTO(APIResultType.SUCCESS, missionType + " Mission Started. Completion time: " + endTime);
 	}
@@ -123,22 +115,24 @@ public class MissionService {
 	public void completeMission(MissionMessage missionMessage) {
 		Player player = playerService.getPlayerById(missionMessage.getPlayerId());
 		System.out.println("Completing mission: " + missionMessage.getType() + " for player " + player.getEmail());
-		
+
 		long extraMoney;
 		Location location;
 		int troopCount, upgradeLevel;
 		TroopType troopType;
 		ResearchType researchType;
 		Research research;
-		
-		// TODO - Add a mission log
+		String message = "";
+
 		switch (missionMessage.getType()) {
 		case CEO:
 			player.setCeoCount(player.getCeoCount() + 1);
+			message = "+1 CEO";
 			break;
 		case MONEY_SMALL:
-			extraMoney = randomLong(100000,500000);
+			extraMoney = randomLong(100000, 500000);
 			player.setMoney(player.getMoney() + extraMoney);
+			message = "+£" + extraMoney;
 			break;
 		case TROOPS_SMALL:
 			location = locationService.getRandomLocationForPlayer(player);
@@ -146,6 +140,7 @@ public class MissionService {
 			troopType = randomTroopType();
 			addTroopsInLocation(location, troopCount, troopType);
 			locationService.save(location);
+			message = "+" + troopCount + " of " + troopType + " in " + location.getIp();
 			break;
 		case UPGRADES_SMALL:
 			upgradeLevel = randomInt(1, 4);
@@ -153,10 +148,12 @@ public class MissionService {
 			research = player.researchOfType(researchType);
 			research.setLevel(research.getLevel() + upgradeLevel);
 			researchService.amendWhereResearchUpgradeAffectsNonPlayerLevel(researchType, player, upgradeLevel);
+			message = "+" + upgradeLevel + " of " + researchType;
 			break;
 		case MONEY_MEDIUM:
-			extraMoney = randomLong(300000,1000000);
+			extraMoney = randomLong(300000, 1000000);
 			player.setMoney(player.getMoney() + extraMoney);
+			message = "+£" + extraMoney;
 			break;
 		case TROOPS_MEDIUM:
 			location = locationService.getRandomLocationForPlayer(player);
@@ -164,6 +161,7 @@ public class MissionService {
 			troopType = randomTroopType();
 			addTroopsInLocation(location, troopCount, troopType);
 			locationService.save(location);
+			message = "+" + troopCount + " of " + troopType + " in " + location.getIp();
 			break;
 		case UPGRADES_MEDIUM:
 			upgradeLevel = randomInt(5, 8);
@@ -171,10 +169,12 @@ public class MissionService {
 			research = player.researchOfType(researchType);
 			research.setLevel(research.getLevel() + upgradeLevel);
 			researchService.amendWhereResearchUpgradeAffectsNonPlayerLevel(researchType, player, upgradeLevel);
+			message = "+" + upgradeLevel + " of " + researchType;
 			break;
 		case MONEY_LARGE:
-			extraMoney = randomLong(800000,2000000);
+			extraMoney = randomLong(800000, 2000000);
 			player.setMoney(player.getMoney() + extraMoney);
+			message = "+£" + extraMoney;
 			break;
 		case TROOPS_LARGE:
 			location = locationService.getRandomLocationForPlayer(player);
@@ -182,6 +182,7 @@ public class MissionService {
 			troopType = randomTroopType();
 			addTroopsInLocation(location, troopCount, troopType);
 			locationService.save(location);
+			message = "+" + troopCount + " of " + troopType + " in " + location.getIp();
 			break;
 		case UPGRADES_LARGE:
 			upgradeLevel = randomInt(9, 12);
@@ -190,26 +191,34 @@ public class MissionService {
 			research = player.researchOfType(researchType);
 			research.setLevel(research.getLevel() + upgradeLevel);
 			researchService.amendWhereResearchUpgradeAffectsNonPlayerLevel(researchType, player, upgradeLevel);
+			message = "+" + upgradeLevel + " of " + researchType;
 			break;
 		default:
 			break;
 		}
-		
+
+		MissionLog missionLog = new MissionLog(missionMessage.getType(), new Date(), message);
+
+		List<MissionLog> mostRecentLogs = player.getLogs().getMissionLogs().stream()
+				.sorted((MissionLog o1, MissionLog o2) -> o2.getTime().compareTo(o1.getTime())).limit(19).collect(Collectors.toList());
+		mostRecentLogs.add(0, missionLog);
+		player.getLogs().setMissionLogs(mostRecentLogs);
+
 		player.setMissions(player.getMissions().stream().filter(m -> !m.getType().equals(missionMessage.getType())).collect(Collectors.toList()));
-		
+
 		playerService.save(player);
 	}
 
 	private void addTroopsInLocation(Location location, int troopCount, TroopType troopType) {
 		boolean found = false;
 		for (Troop troop : location.getDefense()) {
-			if(troop.getType().equals(troopType)) {
+			if (troop.getType().equals(troopType)) {
 				found = true;
 				troop.setNoOfTroops(troop.getNoOfTroops() + troopCount);
 				break;
 			}
 		}
-		if(!found) {
+		if (!found) {
 			location.getDefense().add(new Troop(troopType, troopCount));
 		}
 	}
@@ -217,6 +226,7 @@ public class MissionService {
 	private long randomLong(long rangeMin, long rangeMax) {
 		return ThreadLocalRandom.current().nextLong(rangeMin, rangeMax);
 	}
+
 	private int randomInt(int rangeMin, int rangeMax) {
 		return ThreadLocalRandom.current().nextInt(rangeMin, rangeMax);
 	}
@@ -226,11 +236,12 @@ public class MissionService {
 		int size = values.length;
 		return values[new Random().nextInt(size)];
 	}
+
 	private ResearchType randomResearchType() {
 		ResearchType[] values = ResearchType.values();
 		int size = values.length;
 		ResearchType researchType = values[new Random().nextInt(size)];
-		if(researchService.isResearchTypeMaxLevelCapped(researchType)) {
+		if (researchService.isResearchTypeMaxLevelCapped(researchType)) {
 			return randomResearchType();
 		}
 		return researchType;

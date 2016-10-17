@@ -2,13 +2,16 @@ package hack.core.services;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import hack.core.actor.config.ActorConfig;
 import hack.core.actor.messages.AttackMessage;
+import hack.core.actor.messages.DefenseMessage;
+import hack.core.actor.messages.MissionMessage;
 import hack.core.actor.messages.RecruitmentMessage;
 import hack.core.actor.messages.ResearchMessage;
+import hack.core.actor.messages.ReturnTroopsMessage;
 import hack.core.dao.LocationDAO;
+import hack.core.dao.MissionEntry;
 import hack.core.dao.PlayerDAO;
 import hack.core.dao.ResearchEntry;
 import hack.core.dao.TakeoverTroopsEntry;
@@ -17,12 +20,7 @@ import hack.core.models.TransitTroop;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import scala.concurrent.util.Duration;
 
 @Service
 public class RestartAkkaJobsService {
@@ -33,21 +31,15 @@ public class RestartAkkaJobsService {
 	private PlayerDAO playerDAO;
 
 	@Autowired
-	@Qualifier(ActorConfig.RESEARCH_TRAINING_ACTOR)
-	private ActorRef researchTrainingActor;
-	@Autowired
-	@Qualifier(ActorConfig.RECRUITMENT_ACTOR)
-	private ActorRef recruitmentActor;
-	@Autowired
-	@Qualifier(ActorConfig.ATTACK_ACTOR)
-	private ActorRef attackActor;
-	@Autowired
-	private ActorSystem actorSystem;
+	private SchedulingService schedulingService;
 	
 	public void restartAllJobs() {
 		restartRecruitment();
 		restartTakeovers();
+		restartDefense();
+		restartReturning();
 		restartResearch();
+		restartMissions();
 	}
 
 	private void restartRecruitment() {
@@ -57,29 +49,61 @@ public class RestartAkkaJobsService {
 		
 		for (RecruitmentMessage message : messages) {
 			System.out.println("Schedule recruit - " + message.getIp() + " - " + message.getType() + " - " + message.getRecruitmentTime());
-			actorSystem.scheduler().scheduleOnce(Duration.create(message.getRecruitmentTime(), TimeUnit.SECONDS), recruitmentActor, message);	
+			schedulingService.scheduleJobOnce(ActorConfig.RECRUITMENT_ACTOR, message, message.getRecruitmentTime());
 		}
 		System.out.println("restartRecruitment Finished");
 	}
 	
 	private void restartTakeovers() {
 		System.out.println("restartTakeovers Started");
-		List<TakeoverTroopsEntry> entries = locationDAO.getTransitTroopsForRestart();
+		List<TakeoverTroopsEntry> entries = locationDAO.getTransitTroopsAttackForRestart();
 		
 		for (TakeoverTroopsEntry entry : entries) {
 			TransitTroop troop = entry.getTroops().get(0);
 			
 			ObjectId sourcePlayerId = playerDAO.getPlayerByLocationIP(troop.getSource()).getId();
 			ObjectId targetPlayerId = playerDAO.getPlayerByLocationIP(troop.getTarget()).getId();
-			AttackMessage attackMessage = new AttackMessage(sourcePlayerId, targetPlayerId, entry.getTroops(), entry.getCeo());
+			AttackMessage attackMessage = new AttackMessage(sourcePlayerId, targetPlayerId, entry.getTroops(), 10000); //TODO - This won't work, not enough CEOs, for the time being, I'll set it 10000
 			long secondsToAttack = (troop.getArrival().getTime() - new Date().getTime()) / 1000;
 			if(secondsToAttack < 0) {
 				secondsToAttack = 0;
 			}
 			System.out.println("Schedule takeover - " + troop.getSource() + " to " + troop.getTarget() + " in " + secondsToAttack + " seconds");
-			actorSystem.scheduler().scheduleOnce(Duration.create(secondsToAttack, TimeUnit.SECONDS), attackActor, attackMessage);
+			schedulingService.scheduleJobOnce(ActorConfig.ATTACK_ACTOR, attackMessage, secondsToAttack);
 		}
 		System.out.println("restartTakeovers Finished");
+	}
+	private void restartDefense() {
+		System.out.println("restartDefense Started");
+		List<TakeoverTroopsEntry> entries = locationDAO.getTransitTroopsDefenseForRestart();
+		
+		for (TakeoverTroopsEntry entry : entries) {
+			TransitTroop troop = entry.getTroops().get(0);
+			DefenseMessage defenseMessage = new DefenseMessage(entry.getTroops());
+			long secondsToAttack = (troop.getArrival().getTime() - new Date().getTime()) / 1000;
+			if(secondsToAttack < 0) {
+				secondsToAttack = 0;
+			}
+			System.out.println("Schedule defense - " + troop.getSource() + " to " + troop.getTarget() + " in " + secondsToAttack + " seconds");
+			schedulingService.scheduleJobOnce(ActorConfig.DEFENSE_ACTOR, defenseMessage, secondsToAttack);
+		}
+		System.out.println("restartDefense Finished");
+	}
+	private void restartReturning() {
+		System.out.println("restartReturning Started");
+		List<TakeoverTroopsEntry> entries = locationDAO.getTransitTroopsReturningForRestart();
+		
+		for (TakeoverTroopsEntry entry : entries) {
+			TransitTroop troop = entry.getTroops().get(0);
+			ReturnTroopsMessage returnTroopMessage = new ReturnTroopsMessage(entry.getTroops());
+			long secondsToAttack = (troop.getArrival().getTime() - new Date().getTime()) / 1000;
+			if(secondsToAttack < 0) {
+				secondsToAttack = 0;
+			}
+			System.out.println("Schedule returning - " + troop.getSource() + " to " + troop.getTarget() + " in " + secondsToAttack + " seconds");
+			schedulingService.scheduleJobOnce(ActorConfig.RETURN_TROOPS_ACTOR, returnTroopMessage, secondsToAttack);
+		}
+		System.out.println("restartReturning Finished");
 	}
 	
 	private void restartResearch() {
@@ -94,9 +118,27 @@ public class RestartAkkaJobsService {
 				secondsToCompletion = 0;
 			}
 			System.out.println("Schedule research - " + researchMessage.getPlayerEmail() + " - " + researchMessage.getType() + " in " + secondsToCompletion + " seconds");
-			actorSystem.scheduler().scheduleOnce(Duration.create(secondsToCompletion, TimeUnit.SECONDS), researchTrainingActor, researchMessage);
+			schedulingService.scheduleJobOnce(ActorConfig.RESEARCH_TRAINING_ACTOR, researchMessage, secondsToCompletion);
 		}
+		System.out.println("restartResearch Finished");
 	}
 	
+	private void restartMissions() {
+		System.out.println("restartMissions Started");
+		List<MissionEntry> missions = playerDAO.getMissionsForRestart();
+		
+		for (MissionEntry mission : missions) {
+			long secondsToCompletion = (mission.getCompletionTime().getTime() - new Date().getTime()) / 1000;
+			if(secondsToCompletion < 0) {
+				secondsToCompletion = 0;
+			}
+			MissionMessage missionMessage = new MissionMessage(mission.getPlayerId(), mission.getType());
+			System.out.println("Schedule mission - " + missionMessage.getPlayerId() + " - " + missionMessage.getType() + " in " + secondsToCompletion + " seconds");
+			schedulingService.scheduleJobOnce(ActorConfig.MISSION_ACTOR, missionMessage, secondsToCompletion);
+		}
+		
+		
+		System.out.println("restartMissions Finished");
+	}
 	
 }

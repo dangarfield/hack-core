@@ -2,7 +2,7 @@ package hack.core.actor.messages;
 
 import hack.core.models.ResearchType;
 
-public class ResearchMessage {
+public class ResearchMessage extends AbstractMessage {
 	private String playerEmail;
 	private ResearchType type;
 	private String id;

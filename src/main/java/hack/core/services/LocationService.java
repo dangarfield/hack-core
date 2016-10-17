@@ -154,9 +154,10 @@ public class LocationService {
 		return map;
 	}
 
-	public long calculateAttackTransitTime(Location source, Location target) {
+	public long calculateAttackTransitTimeInSeconds(Location source, Location target) {
 		double distance = calculateDistance(source.getCoord(), target.getCoord());
 		long time = (long) distance * 60 * 30; //1 distance = 30 mins
+		time = 30; //TODO - Set to 30 seconds no matter when, change this when in production
 		return time;
 	}
 	private double calculateDistance(Coord p1, Coord p2) {
