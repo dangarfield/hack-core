@@ -7,6 +7,7 @@ import hack.core.actor.messages.RecruitmentMessage;
 import hack.core.models.Location;
 import hack.core.models.Player;
 
+import org.bson.types.ObjectId;
 import org.jongo.Aggregate.ResultsIterator;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
@@ -149,6 +150,15 @@ public class LocationDAO {
 		} else {
 			return null;
 		}
+	}
+
+	public void updateAllPlayersLocationToSyndicate(ObjectId playerId,
+			String syndicateId, String syndicateName) {
+		locations.update("{player:#}",playerId).multi().with("{$set:{syndicateId:#,syndicateName:#}}",syndicateId, syndicateName);
+	}
+
+	public void removeAllPlayersLocationFromSyndicate(ObjectId playerId) {
+		locations.update("{player:#}",playerId).multi().with("{$unset:{syndicateId:\"\",syndicateName:\"\"}}");
 	}
 
 }

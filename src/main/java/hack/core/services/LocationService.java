@@ -186,5 +186,14 @@ public class LocationService {
 	public Location getRandomLocationForPlayer(Player player) {
 		return locationDAO.getRandomLocationForPlayer(player);
 	}
+
+	public void updateAllPlayersLocationToSyndicate(ObjectId playerId,
+			String syndicateId, String syndicateName) {
+		locationDAO.updateAllPlayersLocationToSyndicate(playerId, syndicateId, syndicateName);
+	}
+	
+	public void removeAllPlayersLocationFromSyndicate(ObjectId playerId) {
+		locationDAO.removeAllPlayersLocationFromSyndicate(playerId);
+	}
 	
 }

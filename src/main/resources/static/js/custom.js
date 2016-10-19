@@ -20,6 +20,11 @@ H.generic = (function() {
 						+ "\"><strong>" + alertTitle + "</strong> "
 						+ data.message + "</div>";
 				$(".result").html(html);
+			}).fail(function(error) {
+				var html = "<div class=\"alert alert-danger\"><strong>Oh no!</strong> "
+				+ error.responseText + "</div>";
+				console.log(error);
+				$(".result").html(html);
 			});
 		});
 		
@@ -28,12 +33,13 @@ H.generic = (function() {
 			$(selector).hide();
 		});
 		
-		var recruitmentForm = $("form.ajax");
-		recruitmentForm.submit(function(e) {
+
+		$("form.ajax").submit(function(e) {
+			e.preventDefault();
 			$.ajax({
-				type: recruitmentForm.attr('method'),
-				url: recruitmentForm.attr('action'),
-				data: recruitmentForm.serialize(),
+				type: $(this).attr('method'),
+				url: $(this).attr('action'),
+				data: $(this).serialize(),
 				success: function (data) {
 					var alertClass = "success";
 					var alertTitle = "Woohoo!";
@@ -49,9 +55,14 @@ H.generic = (function() {
 							+ "\"><strong>" + alertTitle + "</strong> "
 							+ data.message + "</div>";
 					$(".result").html(html);
+				},
+				error: function(error) {
+					var html = "<div class=\"alert alert-danger\"><strong>Oh no!</strong> "
+						+ error.responseText + "</div>";
+						console.log(error);
+					$(".result").html(html);
 				}
 	        });
-			e.preventDefault();
 		});
 	};
 	return {

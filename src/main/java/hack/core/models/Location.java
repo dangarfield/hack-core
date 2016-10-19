@@ -11,6 +11,8 @@ public class Location {
 	@MongoId
 	private String ip;
 	private ObjectId player;
+	private String syndicateId;
+	private String syndicateName;
 	private boolean isNpc;
 	private Coord coord;
 
@@ -53,6 +55,22 @@ public class Location {
 
 	public void setPlayer(ObjectId player) {
 		this.player = player;
+	}
+
+	public String getSyndicateId() {
+		return syndicateId;
+	}
+
+	public void setSyndicateId(String syndicateId) {
+		this.syndicateId = syndicateId;
+	}
+
+	public String getSyndicateName() {
+		return syndicateName;
+	}
+
+	public void setSyndicateName(String syndicateName) {
+		this.syndicateName = syndicateName;
 	}
 
 	public boolean isNpc() {

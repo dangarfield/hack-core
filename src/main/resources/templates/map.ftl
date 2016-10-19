@@ -80,8 +80,8 @@
 		<#list location.defense as troop>
 		    <p>
 		    	<label for="${troop.type}takeover">${troop.type}</label>
-		    	<input class="troop" type="range" min="0" max="${troop.noOfTroops}" value="${troop.noOfTroops}" id="${troop.type}takeover" data-type="${troop.type}" oninput="H.map.updateTroopSliderOutput('${troop.type}takeover',value)">
-		    	<output for="${troop.type}takeover" id="${troop.type}takeoveroutput">${troop.noOfTroops}</output>
+		    	<input class="troop" type="range" min="0" max="${troop.noOfTroops?c}" value="${troop.noOfTroops?c}" id="${troop.type}takeover" data-type="${troop.type}" oninput="H.map.updateTroopSliderOutput('${troop.type}takeover',value)">
+		    	<output for="${troop.type}takeover" id="${troop.type}takeoveroutput">${troop.noOfTroops?c}</output>
 		    </p>
 		</#list>
 		<label for="ceo">CEO</label>
@@ -97,8 +97,8 @@
 		<#list location.defense as troop>
 		    <p>
 		    	<label for="${troop.type}">${troop.type}</label>
-		    	<input class="troop" type="range" min="0" max="${troop.noOfTroops}" value="${troop.noOfTroops}" id="${troop.type}defense" data-type="${troop.type}" oninput="H.map.updateTroopSliderOutput('${troop.type}defense',value)">
-		    	<output for="${troop.type}defense" id="${troop.type}defenseoutput">${troop.noOfTroops}</output>
+		    	<input class="troop" type="range" min="0" max="${troop.noOfTroops?c}" value="${troop.noOfTroops?c}" id="${troop.type}defense" data-type="${troop.type}" oninput="H.map.updateTroopSliderOutput('${troop.type}defense',value)">
+		    	<output for="${troop.type}defense" id="${troop.type}defenseoutput">${troop.noOfTroops?c}</output>
 		    </p>
 		</#list>
 		<br/>

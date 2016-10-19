@@ -17,7 +17,9 @@ import hack.core.services.MissionService;
 import hack.core.services.PlayerService;
 import hack.core.services.RecruitmentService;
 import hack.core.services.ResearchService;
+import hack.core.services.SyndicateService;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,8 @@ public class APIController {
 	private RecruitmentService recruitmentService;
 	@Autowired
 	private MissionService missionService;
+	@Autowired
+	private SyndicateService syndicateService;
 	
 	@PostMapping("/api/research.start")
 	public ResponseEntity<APIResultDTO> researchStart(@RequestParam(value = "type") ResearchType type) {
@@ -121,12 +125,97 @@ public class APIController {
 		
 	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/api/mission.start")
 	public ResponseEntity<APIResultDTO> missionStart(@RequestParam(value = "type") MissionType type) {
 		
 		Player player = playerService.getCurrentPlayer();
 		APIResultDTO result = missionService.triggerMission(player, type);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	
+
+	@PostMapping("/api/syndicate.create")
+	public ResponseEntity<APIResultDTO> syndicateCreate(@RequestParam(value = "name") String name) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.createSyndicate(player, name);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	
+	@PostMapping("/api/syndicate.leave")
+	public ResponseEntity<APIResultDTO> syndicateLeave(@RequestParam(value = "playerId", required = false) String playerId) {
+		Player player = playerService.getCurrentPlayer();
+		if(playerId == null) {
+			playerId = player.getId().toString();
+		}
+		APIResultDTO result = syndicateService.leaveSyndicate(player, playerId);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/syndicate.join-request")
+	public ResponseEntity<APIResultDTO> syndicateJoinRequest(@RequestParam(value = "id") String id) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.syndicateJoinRequest(player, id);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/syndicate.join-approval")
+	public ResponseEntity<APIResultDTO> syndicateJoinApproval(@RequestParam(value = "playerId") String playerId, @RequestParam(value = "approve") boolean approve) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.syndicateJoinApproval(player, playerId, approve);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/syndicate.set-admin")
+	public ResponseEntity<APIResultDTO> syndicateSetAdmin(@RequestParam(value = "playerId") String playerId, @RequestParam(value = "admin") boolean admin) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.syndicateSetAdmin(player, playerId, admin);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/syndicate.disband")
+	public ResponseEntity<APIResultDTO> syndicateDisband(@RequestParam(value = "disband") String disband) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.syndicateDisband(player, disband);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/syndicate.edit-description")
+	public ResponseEntity<APIResultDTO> syndicateEditDescription(@RequestParam(value = "description") String description) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.syndicateEditDescription(player, description);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/topic.add-post")
+	public ResponseEntity<APIResultDTO> topicAddPost(@RequestParam(value = "content") String content, @RequestParam(value = "topicId") ObjectId topicId) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.topicAddPost(player, content, topicId);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/topic.add-topic")
+	public ResponseEntity<APIResultDTO> topicAddTopic(@RequestParam(value = "title") String title) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.topicAddTopic(player, title);
+		
+	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
+	}
+	@PostMapping("/api/topic.remove-topic")
+	public ResponseEntity<APIResultDTO> topicRemoveTopic(@RequestParam(value = "id") ObjectId topicId) {
+		
+		Player player = playerService.getCurrentPlayer();
+		APIResultDTO result = syndicateService.topicRemoveTopic(player, topicId);
 		
 	    return new ResponseEntity<APIResultDTO>(result, HttpStatus.OK);
 	}

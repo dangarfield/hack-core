@@ -38,5 +38,15 @@ public class MongoCollections {
 		LOG.info("Bean created: config");
 		return jongo.getCollection("battleReports");
 	}
+	@Bean
+	public MongoCollection syndicates() {
+		LOG.info("Bean created: syndicates");
+		return jongo.getCollection("syndicates");
+	}
+	@Bean
+	public MongoCollection topics() {
+		LOG.info("Bean created: topics");
+		return jongo.getCollection("topics");
+	}
 
 }

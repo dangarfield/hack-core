@@ -4,6 +4,8 @@ import hack.core.config.security.RegistrationForm;
 import hack.core.dao.ConfigDAO;
 import hack.core.dao.LocationDAO;
 import hack.core.dao.PlayerDAO;
+import hack.core.dao.SyndicateDAO;
+import hack.core.dao.TopicDAO;
 import hack.core.dto.APIResultDTO;
 import hack.core.dto.APIResultType;
 import hack.core.models.Coord;
@@ -47,6 +49,10 @@ public class AdminController {
 	private PlayerDAO playerDAO;
 	@Autowired
 	private ConfigDAO configDAO;
+	@Autowired
+	private SyndicateDAO syndicatesDAO;
+	@Autowired
+	private TopicDAO topicsDAO;
 
 	@RequestMapping("/admin")
 	public String appHome(Model model, Principal principle) {
@@ -63,6 +69,8 @@ public class AdminController {
 		playerDAO.removeAllData();
 		configDAO.saveNewestCoord(new Coord(0, 0));
 		battleReportDAO.removeAllData();
+		syndicatesDAO.removeAllData();
+		topicsDAO.removeAllData();
 
 		APIResultDTO result = new APIResultDTO(APIResultType.SUCCESS, "Removed all data");
 

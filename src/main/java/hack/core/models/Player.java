@@ -23,6 +23,8 @@ public class Player {
 
 	private Set<Research> researches;
 	private List<String> locationIps;
+	private String syndicateId;
+	private String syndicateName;
 
 	private long money;
 
@@ -30,7 +32,7 @@ public class Player {
 	private int ceoCount;
 
 	private List<MissionInProgress> missions;
-	
+
 	public Player() {
 		super();
 		this.locationIps = new ArrayList<String>();
@@ -95,6 +97,22 @@ public class Player {
 		this.locationIps = locationIps;
 	}
 
+	public String getSyndicateId() {
+		return syndicateId;
+	}
+
+	public void setSyndicateId(String syndicateId) {
+		this.syndicateId = syndicateId;
+	}
+
+	public String getSyndicateName() {
+		return syndicateName;
+	}
+
+	public void setSyndicateName(String syndicateName) {
+		this.syndicateName = syndicateName;
+	}
+
 	public long getMoney() {
 		return money;
 	}
@@ -102,7 +120,6 @@ public class Player {
 	public void setMoney(long money) {
 		this.money = money;
 	}
-
 
 	public Logs getLogs() {
 		return logs;
@@ -147,12 +164,14 @@ public class Player {
 	}
 
 	public MissionInProgress missionOfType(MissionType type) {
-		Optional<MissionInProgress> promise = this.missions.stream().filter(m -> m.getType().equals(type)).findFirst();
-		if(promise.isPresent()) {
+		Optional<MissionInProgress> promise = this.missions.stream()
+				.filter(m -> m.getType().equals(type)).findFirst();
+		if (promise.isPresent()) {
 			return promise.get();
 		}
 		return null;
 	}
+
 	public int currentNoOfResearchInTraining() {
 		int no = 0;
 		for (Research research : this.researches) {
@@ -164,7 +183,8 @@ public class Player {
 	public AttackLog getRecentAttackForIp(String targetIp) {
 		for (AttackLog attackLog : this.getLogs().getStealMoneyAttackCooldown()) {
 			Date cutOff = new Date(new Date().getTime() - (60 * 60 * 1000));
-			if (attackLog.getTargetIp().equals(targetIp) && attackLog.getTime().compareTo(cutOff) > 0) {
+			if (attackLog.getTargetIp().equals(targetIp)
+					&& attackLog.getTime().compareTo(cutOff) > 0) {
 				return attackLog;
 			}
 		}

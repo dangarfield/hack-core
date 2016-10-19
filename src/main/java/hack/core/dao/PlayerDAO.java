@@ -3,11 +3,13 @@ package hack.core.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import hack.core.dto.PlayerDTO;
 import hack.core.models.Player;
 
 import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
 import org.jongo.Aggregate.ResultsIterator;
+import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,6 +89,34 @@ public class PlayerDAO {
 		}
 
 		return entries;
+	}
+
+	public void updatePlayerToSyndicate(ObjectId playerId, String syndicateId,
+			String syndicateName) {
+		players.update("{_id:#}",playerId).multi().with("{$set:{syndicateId:#,syndicateName:#}}", syndicateId, syndicateName);
+	}
+
+	public void removePlayerFromSyndicate(ObjectId playerId) {
+		players.update("{_id:#}",playerId).multi().with("{$unset:{syndicateId:\"\",syndicateName:\"\"}}");
+	}
+
+	public List<PlayerDTO> getPlayerDTOSById(List<ObjectId> playerIds) {
+		if(playerIds.isEmpty()) {
+			return new ArrayList<PlayerDTO>();
+		}
+		List<String> findList = new ArrayList<String>();
+		for (ObjectId playerId : playerIds) {
+			findList.add("{_id: {$oid:\""+playerId.toString()+"\"}}");
+		}
+		
+		String query = "{$or: ["+String.join(",", findList)+"]}";
+		MongoCursor<PlayerDTO> playerRes = players.find(query).as(PlayerDTO.class);
+		
+		List<PlayerDTO> playerList = new ArrayList<PlayerDTO>();
+		for (PlayerDTO playerDTO : playerRes) {
+			playerList.add(playerDTO);
+		}
+		return playerList;
 	}
 
 	

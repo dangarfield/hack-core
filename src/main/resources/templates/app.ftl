@@ -16,6 +16,21 @@
 			
 			<ul>
 				<li><strong>Name:</strong> ${player.name}</li>
+				
+				<li>
+					<strong>Syndicate:</strong>
+					<#if player.syndicateId??>
+						<a href="/app/syn/${player.syndicateId}">${player.syndicateName}</a> <button type="button" class="btn btn-primary btn-sm" data-action="/api/syndicate.leave?name=${player.id}">Leave syndicate</button>
+					<#else>
+						<form class="syndicate-create form-inline ajax" action="/api/syndicate.create" method="POST">
+							<div class="form-group">
+								<!--<label for="recruitment-no">Example label</label>-->
+								<input type="text" class="form-control" id="syndicate-name" name="name" placeholder="My Syndicate">
+							</div>
+							<button type="submit" class="btn btn-primary">Create syndicate</button>
+						</form>
+					</#if>
+				</li>
 				<li><strong>Email:</strong> ${player.email}</li>
 				<li><strong>Money:</strong> ${player.money}</li>
 				<li><strong>Research</strong></li>
@@ -27,7 +42,7 @@
 						<li><strong>Research:</strong> ${research.type} - Level: ${research.level} <button type="button" class="btn btn-primary btn-sm" data-action="/api/research.start?type=${research.type}">Upgrade</button></li>
 						<ul>
 						<#list research.currentlyTraining as trainingResearch>
-							<li><strong>Currently Training:</strong> Start: ${trainingResearch.startTime?datetime} - End: ${trainingResearch.endTime?datetime}</li>
+							<li><strong>Currently Training:</strong> Finished in: ${(trainingResearch.endTime?long - now?long)?number_to_date?string('HH:mm:ss')}</li>
 							
 						</#list>
 						</ul>
